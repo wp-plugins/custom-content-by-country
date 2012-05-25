@@ -1,7 +1,7 @@
 === Custom Content by Country, from Worpit ===
 Contributors: paultgoodchild, dlgoodchild
 Donate link: http://worpit.com/
-Tags: ip-2-nation, custom content, location
+Tags: ip-2-nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4
 Stable tag: trunk
@@ -13,6 +13,8 @@ offers you the option to show/hide content to users based on their location (whe
 
 With a simple shortcode you can specify, using a list of country codes whether to 
 display or hide a block of text/content.
+
+To find out how to use the plugin, see the comprehensive FAQ
 
 == Frequently Asked Questions ==
 
@@ -82,6 +84,18 @@ Yes, I have provided 2 extra shortcodes. They are:
 = Can I nest shortcodes - put a shortcode within the custom content? =
 
 Yes.
+
+= I want to use CSS to style the output, is there way I can do that? =
+
+Yes. Any output from the plugin is wrapped in html SPANs with corresponding classes:
+
+CBC has class cbc_content
+CBC_COUNTRY has class cbc_country
+CBC_IP has class cbc_ip
+
+There is also the option within the each shortcode itself to specify ID and STYLE just like you would HTML elements.
+
+e.g. [CBC country="gb" show="y" id="my_cbc_id" style="color:yellow"]Custom Content for GB[/CBC]
 
 == Changelog ==
 

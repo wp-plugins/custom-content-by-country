@@ -66,7 +66,8 @@ class Worpit_CustomContentByCountry {
 		$this->m_aShortcodes = array(
 				'CBC'			=> 	'showContentByCountry',
 				'CBC_COUNTRY'	=>	'printVisitorCountryName',
-				'CBC_IP'		=>	'printVisitorIpAddress'
+				'CBC_IP'		=>	'printVisitorIpAddress',
+				'CBC_HELP'		=>	'printHelp'
 		);
 	}
 	
@@ -154,6 +155,11 @@ class Worpit_CustomContentByCountry {
 	 * @param $insContent
 	 */
 	public function showContentByCountry( $inaAtts = array(), $insContent = '' ) {
+
+		$this->def( &$inaAtts, 'id' );
+		$this->def( &$inaAtts, 'style' );
+		$this->noEmptyElement( $inaAtts, 'id' );
+		$this->noEmptyElement( $inaAtts, 'style' );
 		
 		$this->def( &$inaAtts, 'country', '' );
 		$this->def( &$inaAtts, 'show', 'y' );		//defaults to displaying content
@@ -179,7 +185,9 @@ class Worpit_CustomContentByCountry {
 	 		$sOutput = do_shortcode($inaAtts['message']);
 		}
 		
-		return '<span id="cbc_content">'.$sOutput.'</span>';
+		return '<span class="cbc_content"'
+					.$inaAtts['style']
+					.$inaAtts['id'].'>'.$sOutput.'</span>';
 		
 	}//showContentByCountry
 	
@@ -196,8 +204,16 @@ class Worpit_CustomContentByCountry {
 		return $sCode;
 	}//getVisitorCountryCode
 	
-	public function printVisitorCountryCode() {
-		return '<span id="cbc_countrycode">'.$this->getVisitorCountryCode().'</span>';
+	public function printVisitorCountryCode( $inaAtts = array() ) {
+
+		$this->def( &$inaAtts, 'id' );
+		$this->def( &$inaAtts, 'style' );
+		$this->noEmptyElement( $inaAtts, 'id' );
+		$this->noEmptyElement( $inaAtts, 'style' );
+
+		return '<span class="cbc_countrycode"'
+					.$inaAtts['style']
+					.$inaAtts['id'].'>'.$this->getVisitorCountryCode().'</span>';
 	}
 	
 	public static function getVisitorCountryName() {
@@ -208,8 +224,16 @@ class Worpit_CustomContentByCountry {
 		return $sCountry;
 	}//getVisitorCountryName
 	
-	public function printVisitorCountryName() {
-		return '<span id="cbc_country">'.$this->getVisitorCountryName().'</span>';
+	public function printVisitorCountryName( $inaAtts = array() ) {
+
+		$this->def( &$inaAtts, 'id' );
+		$this->def( &$inaAtts, 'style' );
+		$this->noEmptyElement( $inaAtts, 'id' );
+		$this->noEmptyElement( $inaAtts, 'style' );
+
+		return '<span class="cbc_country"'
+					.$inaAtts['style']
+					.$inaAtts['id'].'>'.$this->getVisitorCountryName().'</span>';
 	}
 	
 	public static function getVisitorIpAddress() {
@@ -225,8 +249,16 @@ class Worpit_CustomContentByCountry {
 
 	}//getVisitorIpAddress
 	
-	public function printVisitorIpAddress() {
-		return '<span id="cbc_ip">'.$this->getVisitorIpAddress().'</span>';
+	public function printVisitorIpAddress( $inaAtts = array() ) {
+
+		$this->def( &$inaAtts, 'id' );
+		$this->def( &$inaAtts, 'style' );
+		$this->noEmptyElement( $inaAtts, 'id' );
+		$this->noEmptyElement( $inaAtts, 'style' );
+
+		return '<span class="cbc_ip"'
+					.$inaAtts['style']
+					.$inaAtts['id'].'>'.$this->getVisitorIpAddress().'</span>';
 	}
 	
 	public static function getVisitorCountryData() {
@@ -250,6 +282,10 @@ class Worpit_CustomContentByCountry {
 		return $sCountryData;
 
 	}//getVisitorCountryData
+	
+	public function printHelp() {
+		
+	}
 	
 	private function importMysqlFile( $insFilename ) {
 		
@@ -295,6 +331,11 @@ class Worpit_CustomContentByCountry {
 		if ( !isset( $aSrc[$insKey] ) ) {
 			$aSrc[$insKey] = $insValue;
 		}
+	}
+	protected function noEmptyElement( &$inaArgs, $insAttrKey, $insElement = '' ) {
+		$sAttrValue = $inaArgs[$insAttrKey];
+		$insElement = ( $insElement == '' )? $insAttrKey : $insElement;
+		$inaArgs[$insAttrKey] = ( empty($sAttrValue) ) ? '' : ' '.$insElement.'="'.$sAttrValue.'"';
 	}
 	
 }//CLASS
