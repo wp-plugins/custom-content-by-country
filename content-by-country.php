@@ -267,7 +267,7 @@ class Worpit_CustomContentByCountry {
 
 		$sIpAddress = Worpit_CustomContentByCountry::getVisitorIpAddress();
 		
-		$sql_query = "
+		$sSqlQuery = "
 			SELECT `c`.`country`, `c`.`code`
 			FROM `ip2nationCountries` AS `c`
 			INNER JOIN ip2nation AS `i`
@@ -276,15 +276,14 @@ class Worpit_CustomContentByCountry {
 			ORDER BY `i`.`ip` DESC
 			LIMIT 1
 		";
-		$sql_query = sprintf( $sql_query, $sIpAddress );
-		$sCountryData = $wpdb->get_row( $sql_query );
+		$sSqlQuery = sprintf( $sSqlQuery, $sIpAddress );
+		$sCountryData = $wpdb->get_row( $sSqlQuery );
 		
 		return $sCountryData;
 
 	}//getVisitorCountryData
 	
 	public function printHelp() {
-		
 	}
 	
 	private function importMysqlFile( $insFilename ) {
@@ -332,7 +331,7 @@ class Worpit_CustomContentByCountry {
 			$aSrc[$insKey] = $insValue;
 		}
 	}
-	protected function noEmptyElement( &$inaArgs, $insAttrKey, $insElement = '' ) {
+	private function noEmptyElement( &$inaArgs, $insAttrKey, $insElement = '' ) {
 		$sAttrValue = $inaArgs[$insAttrKey];
 		$insElement = ( $insElement == '' )? $insAttrKey : $insElement;
 		$inaArgs[$insAttrKey] = ( empty($sAttrValue) ) ? '' : ' '.$insElement.'="'.$sAttrValue.'"';

@@ -4,7 +4,7 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4
-Stable tag: trunk
+Stable tag: 1.0
 
 == Description ==
 
