@@ -29,7 +29,9 @@ Author URI: http://worpit.com/
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class Worpit_ContentByCountry {
+define( 'DS', DIRECTORY_SEPARATOR );
+
+class Worpit_CustomContentByCountry {
 	
 	const Ip2NationDbVersion = '20120210';
 	const CBC_PluginVersion = '1.0';
@@ -37,8 +39,35 @@ class Worpit_ContentByCountry {
 	const OptionPrefix	= 'worpit_cbc_';
 	const Ip2NationDbVersionKey = 'ip2nation_version';
 	
+	public function __construct( $infInitialize = false ){
+		if ($infInitialize) $this->initializeShortcodes();
+	}//__construct
+	
+	protected function initializeShortcodes() {
+		
+		$this->initializeMetaData();
+		$this->createShortcodeArray();
+		
+		if ( function_exists('add_shortcode') ) {
+			foreach( $this->m_aShortcodes as $shortcode => $function_to_call ) {
+				add_shortcode($shortcode, array(&$this, $function_to_call) );
+			}//foreach
+		}
+	}//initializeShortcodes
+	
 	protected function initializeMetaData() {
 		add_action( 'admin_init', array( &$this, 'installIp2NationsDb' ) );
+	}
+
+	/**
+	 * Add desired shortcodes to this array.
+	 */
+	protected function createShortcodeArray() {
+		$this->m_aShortcodes = array(
+				'CBC'			=> 	'showContentByCountry',
+				'CBC_COUNTRY'	=>	'getVisitorCountryName',
+				'CBC_IP'		=>	'getVisitorIpAddress'
+		);
 	}
 	
 	public function installIp2NationsDb() {
@@ -74,7 +103,7 @@ class Worpit_ContentByCountry {
 
 		} else {
 			
-			$fImportSuccess = $this->importMysqlFile( dirname(__FILE__).'/ip2nation.sql' );
+			$fImportSuccess = $this->importMysqlFile( dirname(__FILE__).DS.'inc'.DS.'ip2nation'.DS.'ip2nation.sql' );
 			
 			if ( $fImportSuccess ) {
 
@@ -105,15 +134,6 @@ class Worpit_ContentByCountry {
 		}
 			
 	}//installIp2NationsDb
-
-	/**
-	 * Add desired shortcodes to this array.
-	 */
-	protected function createShortcodeArray() {
-		$this->m_aShortcodes = array(
-			'CBC'	=> 	'showContentByCountry'
-		);
-	}
 
 	/**
 	 * Meat and Potatoes of the plugin
@@ -257,3 +277,5 @@ class Worpit_ContentByCountry {
 	}//mysql_import
 	
 }//CLASS
+
+new Worpit_CustomContentByCountry( true );

@@ -22,11 +22,14 @@ display or hide a block of text/content.
 
 = What options are availabe in the shortcode? =
 
-Currently there are 2 options/parameters: country and show
+Currently there are 3 options/parameters: country, show, message
 
 country: is a comma-separated list of country codes, e.g. country="us, es, uk"
 
 show: is a simple yes ('y') or no ('no'). e.g. to hide content, show="n"
+
+message: is an optional piece of text you can use to display when the texts that you're showing/hiding from a group of people isn't shown.
+Instead of displaying absolutely nothing, you can display a message. e.g message="Sorry, this content isn't available in your region."
 
 = How do I use the shortcode? =
 
@@ -68,7 +71,13 @@ If you don't install this data, you cannot use the plugin.
 Currently you don't need it. This plugin is as slim and does all it needs to with no frills. If you have any requests
 for related functionality, please let me know.
 
-== Screenshots ==
+= Are the any other shortcodes available in this plugin? =
+
+Yes, I have provided 2 extra shortcodes. They are:
+
+[CBC_COUNTRY /]  takes no parameters and is used as-is. This will print the visitor's full country name.
+
+[CBC_IP /]  takes no parameters and is used as-is. This will print the visitor's full IP address (or their proxy server).
 
 == Changelog ==
 
