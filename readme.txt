@@ -1,7 +1,7 @@
 === Custom Content by Country, from Worpit ===
 Contributors: paultgoodchild, dlgoodchild
 Donate link: http://worpit.com/
-Tags: ip-2-nation, custom content, location, geolocation
+Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4
 Stable tag: trunk
@@ -14,7 +14,7 @@ offers you the option to show/hide content to users based on their location (whe
 With a simple shortcode you can specify, using a list of country codes whether to 
 display or hide a block of text/content.
 
-To find out how to use the plugin, see the comprehensive FAQ
+To learn how to use the plugin, see the [comprehensive FAQ](http://wordpress.org/extend/plugins/custom-content-by-country/faq/)  
 
 == Frequently Asked Questions ==
 
@@ -22,15 +22,15 @@ To find out how to use the plugin, see the comprehensive FAQ
 
 [CBC] [/CBC]
 
-= What options are availabe in the shortcode? =
+= What options are available in the shortcode? =
 
-Currently there are 3 options/parameters: country, show, message
+Currently there are 3 options/parameters: *country*, *show*, *message*
 
 country: is a comma-separated list of country codes, e.g. country="us, es, uk"
 
 show: is a simple yes ('y') or no ('n'). e.g. to hide content, show="n"
 
-message: is an optional piece of text you can use to display when the texts that you're showing/hiding from a group of people isn't shown.
+message: is an optional piece of text you can display when the content that you're showing/hiding from a group of people isn't shown.
 Instead of displaying absolutely nothing, you can display a message. e.g message="Sorry, this content isn't available in your region."
 
 = How do I use the shortcode? =
@@ -58,14 +58,14 @@ If you're site isn't using CloudFlare, you really should consider it.
 Separately, if you are using it on your site, you have a slight optimization where I use a parameter that
 CloudFlare sends that gives the users location saving me an SQL query.
 
-= Where does the plugin pull it's IP location data? =
+= Where does the plugin pull its IP location data? =
 
 The plugin makes use of the location data provided by IP 2 Nation that is freely available. You don't need
 to pay for this.
 
 = Will this plugin slow my site down by making external queries to 3rd parties? =
 
-No. The plugin, upon activation, will give ask you to install the necessary data into your WordPress database.
+No. The plugin, upon activation, will ask you to install the necessary data into your own WordPress database.
 If you don't install this data, you cannot use the plugin.
 
 = There's no plugin options page - why? =
@@ -81,21 +81,37 @@ Yes, I have provided 2 extra shortcodes. They are:
 
 [CBC_IP /]  takes no parameters and is used as-is. This will print the visitor's full IP address (or their proxy server).
 
-= Can I nest shortcodes - put a shortcode within the custom content? =
+= Can I nest shortcodes - i.e. put a shortcode within the custom content? =
 
-Yes.
+Yes. I'm still baffled why other plugin authors find this a challenge.
 
 = I want to use CSS to style the output, is there way I can do that? =
 
-Yes. Any output from the plugin is wrapped in html SPANs with corresponding classes:
+Yes. Again, I'm still baffled why other plugin authors find this a challenge.
 
-CBC has class cbc_content
-CBC_COUNTRY has class cbc_country
-CBC_IP has class cbc_ip
+Any output from the plugin is wrapped in html SPANs with corresponding classes:
+
+CBC has class 'cbc_content'
+CBC_COUNTRY has class 'cbc_country'
+CBC_IP has class 'cbc_ip'
 
 There is also the option within the each shortcode itself to specify ID and STYLE just like you would HTML elements.
 
-e.g. [CBC country="gb" show="y" id="my_cbc_id" style="color:yellow"]Custom Content for GB[/CBC]
+e.g. [CBC country="gb" show="y" id="my_cbc_id" style="color:yellow;"]Custom Content for GB[/CBC]
+
+= Do you make any other plugins? =
+
+Yes, we created the only [Twitter Bootstrap WordPress](http://worpit.com/wordpress-twitter-bootstrap-css-plugin-home/ "Twitter Bootstrap WordPress Plugin")
+plugin with over 10,000 downloads so far.
+
+We also created the [Worpit Administration Dashboard](http://worpit.com/?wordpress) for people with multiple WordPress sites to manage.
+
+= Is there an option to remove the data that was added to the DB by the plugin? =
+
+Currently, no (but eventually, yes). You can do so manually by firing up your phpMyAdmin for your site and dropping the following 2 tables:
+
+ip2nation
+ip2nationCountries
 
 == Changelog ==
 
