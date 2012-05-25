@@ -65,8 +65,8 @@ class Worpit_CustomContentByCountry {
 	protected function createShortcodeArray() {
 		$this->m_aShortcodes = array(
 				'CBC'			=> 	'showContentByCountry',
-				'CBC_COUNTRY'	=>	'getVisitorCountryName',
-				'CBC_IP'		=>	'getVisitorIpAddress'
+				'CBC_COUNTRY'	=>	'printVisitorCountryName',
+				'CBC_IP'		=>	'printVisitorIpAddress'
 		);
 	}
 	
@@ -170,14 +170,17 @@ class Worpit_CustomContentByCountry {
 		$sVisitorCountryCode = strtolower( $this->getVisitorCountryCode() );
 
 		//Print nothing if the user is in one of the countries specified and you have set show='n'
+		$sOutput;
 		if( in_array( $sVisitorCountryCode, $aSelectedCountries ) && ( strtolower( $inaAtts['show'] ) == 'y' ) ) {
-	 		return do_shortcode($insContent);
+	 		$sOutput = do_shortcode($insContent);
 		} else if( !in_array( $sVisitorCountryCode, $aSelectedCountries ) && ( strtolower( $inaAtts['show'] ) == 'n' ) ) {
-	 		return do_shortcode($insContent);
+	 		$sOutput = do_shortcode($insContent);
 		} else {
-	 		return do_shortcode($inaAtts['message']);
+	 		$sOutput = do_shortcode($inaAtts['message']);
 		}
-
+		
+		return '<span id="cbc_content">'.$sOutput.'</span>';
+		
 	}//showContentByCountry
 	
 	/**
@@ -187,19 +190,27 @@ class Worpit_CustomContentByCountry {
 		if ( isset($_SERVER["HTTP_CF_IPCOUNTRY"]) ) {
 			$sCode = $_SERVER["HTTP_CF_IPCOUNTRY"];
 		} else {
-			$dbData = Worpit_ContentByCountry::getVisitorCountryData();
+			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
 			$sCode = $dbData->code;
 		}
 		return $sCode;
 	}//getVisitorCountryCode
 	
+	public function printVisitorCountryCode() {
+		return '<span id="cbc_countrycode">'.$this->getVisitorCountryCode().'</span>';
+	}
+	
 	public static function getVisitorCountryName() {
 
-		$dbData = Worpit_ContentByCountry::getVisitorCountryData();
+		$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
 		$sCountry = $dbData->country;
 
 		return $sCountry;
 	}//getVisitorCountryName
+	
+	public function printVisitorCountryName() {
+		return '<span id="cbc_country">'.$this->getVisitorCountryName().'</span>';
+	}
 	
 	public static function getVisitorIpAddress() {
 	
@@ -214,11 +225,15 @@ class Worpit_CustomContentByCountry {
 
 	}//getVisitorIpAddress
 	
+	public function printVisitorIpAddress() {
+		return '<span id="cbc_ip">'.$this->getVisitorIpAddress().'</span>';
+	}
+	
 	public static function getVisitorCountryData() {
 
 		global $wpdb;
 
-		$sIpAddress = Worpit_ContentByCountry::getVisitorIpAddress();
+		$sIpAddress = Worpit_CustomContentByCountry::getVisitorIpAddress();
 		
 		$sql_query = "
 			SELECT `c`.`country`, `c`.`code`
