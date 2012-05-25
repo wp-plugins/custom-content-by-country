@@ -276,6 +276,12 @@ class Worpit_CustomContentByCountry {
 		return true;
 	}//mysql_import
 	
+	private function def( &$aSrc, $insKey, $insValue = '' ) {
+		if ( !isset( $aSrc[$insKey] ) ) {
+			$aSrc[$insKey] = $insValue;
+		}
+	}
+	
 }//CLASS
 
 new Worpit_CustomContentByCountry( true );
