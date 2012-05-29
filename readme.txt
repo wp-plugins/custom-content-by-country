@@ -117,6 +117,8 @@ ip2nationCountries
 
 = 1.1 =
 
+* ADDED: Shortcode [CBC_CODE/] - which will print your country code.
+* ADDED: Special case for local testing, where if your IP Address is detected as 127.0.0.1, country and country code will be detected as 'localhost'.
 * Tidied up the code A LOT.
 * Improved the Admin Notices and DB update process, and is now using the correct WordPress action hooks.
 * Added special case for local testing, where if your IP Address is detected as 127.0.0.1, country and country code will be 'localhost'.
