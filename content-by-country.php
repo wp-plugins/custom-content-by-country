@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 1.0
+Version: 1.1
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -31,21 +31,57 @@ Author URI: http://worpit.com/
 
 define( 'DS', DIRECTORY_SEPARATOR );
 
-class Worpit_CustomContentByCountry {
+class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
 	const Ip2NationDbVersion = '20120210';
-	const CBC_PluginVersion = '1.0';
 	
 	const OptionPrefix	= 'worpit_cbc_';
 	const Ip2NationDbVersionKey = 'ip2nation_version';
 	
-	public function __construct( $infInitialize = false ){
-		if ($infInitialize) $this->initializeShortcodes();
+	protected $m_fIp2NationsDbInstall;
+	protected $m_fIp2NationsDbInstallAttempt;
+	
+	protected $m_fUpdateSuccessTracker;
+	protected $m_aFailedUpdateOptions;
+	
+	public function __construct(){
+		parent::__construct();
+
+		self::$VERSION		= '1.1'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+		
+		self::$PLUGIN_NAME	= basename(__FILE__);
+		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );
+		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.DS.self::$PLUGIN_PATH.DS;
+		self::$PLUGIN_URL	= WP_PLUGIN_URL.'/'.self::$PLUGIN_PATH.'/';
+		
+		$this->m_fIp2NationsDbInstall = false;
+		$this->m_fIp2NationsDbInstallAttempt = false;
 	}//__construct
+
+	public function onWpInit() {
+		parent::onWpInit();
+
+		$this->initializeShortcodes();
+	}
+
+	public function onWpAdminInit() {
+		parent::onWpAdminInit();
+
+		$this->installIp2NationsDb();
+	}
+
+	public function onWpPluginsLoaded() {
+		parent::onWpPluginsLoaded();
+	}
+	
+	public function onWpAdminMenu() {
+		parent::onWpAdminMenu();
+	//	add_submenu_page( self::ParentMenuId, $this->getSubmenuPageTitle( 'Bootstrap CSS' ), 'Bootstrap CSS', self::ParentPermissions, $this->getSubmenuId( 'bootstrap-css' ), array( &$this, 'onDisplayIndex' ) );
+	//	$this->fixSubmenu();
+	}
 	
 	protected function initializeShortcodes() {
-		
-		$this->initializeMetaData();
+	
 		$this->createShortcodeArray();
 		
 		if ( function_exists('add_shortcode') ) {
@@ -54,10 +90,6 @@ class Worpit_CustomContentByCountry {
 			}//foreach
 		}
 	}//initializeShortcodes
-	
-	protected function initializeMetaData() {
-		add_action( 'admin_init', array( &$this, 'installIp2NationsDb' ) );
-	}
 
 	/**
 	 * Add desired shortcodes to this array.
@@ -66,75 +98,104 @@ class Worpit_CustomContentByCountry {
 		$this->m_aShortcodes = array(
 				'CBC'			=> 	'showContentByCountry',
 				'CBC_COUNTRY'	=>	'printVisitorCountryName',
+				'CBC_CODE'		=>	'printVisitorCountryCode',
 				'CBC_IP'		=>	'printVisitorIpAddress',
 				'CBC_HELP'		=>	'printHelp'
 		);
 	}
 	
-	public function installIp2NationsDb() {
+	private function installIp2NationsDb() {
 		
+		//Do we have admin priviledges?
 		if ( !current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
 		$sDbVersion = get_option( self::OptionPrefix.self::Ip2NationDbVersionKey );
 
+		//jump out if the DB version is already up-to-date.
 		if ( $sDbVersion === self::Ip2NationDbVersion ) {
 			return;
 		}
 
 		//At this stage, we've determined that the currently installed IP-2-Nation is non-existent or out of date.
-		
-		if ( !isset( $_GET['CBC_INSTALL_DB'] )  ) {
-
-			echo '
-				<div id="message" class="updated">
-					<style>
-						#message form {
-							margin: 0px;
-						}
-					</style>
-					<form method="post" action="index.php?CBC_INSTALL_DB=1">
-						<p><strong>The IP-2-Nations data needs to be installed before you can use the <em>Content By Country</em> plugin.</strong>
-						<input type="submit" value="Click here to install now (it may take a few seconds - click only ONCE)" name="submit" class="button-primary">
-						</p>
-					</form>
-				</div>
-			';
-
-		} else {
-			
-			$fImportSuccess = $this->importMysqlFile( dirname(__FILE__).DS.'inc'.DS.'ip2nation'.DS.'ip2nation.sql' );
-			
-			if ( $fImportSuccess ) {
-
-				echo '
-				<div id="message" class="updated">
-					<style>
-						#message form {
-							margin: 0px;
-						}
-					</style>
-					<p><strong>Success</strong>: The IP-2-Nations data was automatically installed successfully for the "Content By Country" plugin.</p>
-				</div>
-				';
-			} else {
-				
-				echo '
-				<div id="message" class="updated">
-					<style>
-						#message form {
-							margin: 0px;
-						}
-					</style>
-					<p>The IP-2-Nations data was <strong>NOT</strong> successfully installed. For perfomance reasons, only 1 attempt is made - you will have to do so manually.</p>
-				</div>
-				';
-			}
+		//Is the install flag set?
+		if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' ) {
+			$this->m_fIp2NationsDbInstallAttempt = true;	//used later for admin notices
+			$this->m_fIp2NationsDbInstall = $this->importMysqlFile( dirname(__FILE__).DS.'inc'.DS.'ip2nation'.DS.'ip2nation.sql' );
 			update_option( self::OptionPrefix.self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
 		}
 			
 	}//installIp2NationsDb
+	
+	public function onWpAdminNotices() {
+		
+		$this->adminNoticeIp2NationsDb();
+		
+	}
+	
+	private function adminNoticeIp2NationsDb() {
+		
+		//Do we have admin priviledges?
+		if ( !current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		
+		$sDbVersion = get_option( self::OptionPrefix.self::Ip2NationDbVersionKey );
+	
+		if ( !isset( $_GET['CBC_INSTALL_DB'] ) && $sDbVersion !== self::Ip2NationDbVersion ) {
+			//At this stage, we've determined that the currently installed IP-2-Nation is non-existent or out of date.
+			$sNotice = '
+					<form method="post" action="index.php?CBC_INSTALL_DB=install" id="cbc_install_db">
+						<p><strong>The IP-2-Nations data needs to be installed before you can use the <em>Content By Country</em> plugin.</strong>
+						<input type="submit" value="Click here to install now (it may take a few seconds - click only ONCE)"
+						name="cbc_submit" id="cbc_submit" class="button-primary" onclick="changeSubmitButton()">
+						</p>
+					</form>
+					<script type="text/javascript">
+						function changeSubmitButton() {
+							var elem = jQuery("#cbc_submit");
+							elem.val("Please wait, attempting to install data. The page will reload when it finishes ...");
+							elem.attr("disabled", "disabled");
+							var form = jQuery("#cbc_install_db").submit();
+						}
+					</script>
+			';
+			$this->getAdminNotice($sNotice, true);
+
+		} else if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' && $this->m_fIp2NationsDbInstallAttempt ) {
+			
+			if ( $this->m_fIp2NationsDbInstall ) {
+				$sNotice = '<p><strong>Success</strong>: The IP-2-Nations data was automatically installed successfully for the "Content By Country" plugin.</p>';
+				$this->getAdminNotice($sNotice, true);
+			} else {
+				$sNotice = '<p>The IP-2-Nations data was <strong>NOT</strong> successfully installed. For perfomance reasons, only 1 attempt is ever made - you will have to do so manually.</p>';
+				$this->getAdminNotice($sNotice, true);
+			}
+		}
+		
+	}//adminNoticeIp2NationsDb
+	
+	private function getAdminNotice( $insNotice = '', $infPrint = false ) {
+		
+		$sFullNotice = '
+			<div id="message" class="updated">
+				<style>
+					#message form {
+						margin: 0px;
+					}
+				</style>
+				'.$insNotice.'
+			</div>
+		';
+		
+		if ( $infPrint ) {
+			echo $sFullNotice;
+			return true;
+		} else {
+			return $sFullNotice;
+		}
+	}//printAdminNotice
 
 	/**
 	 * Meat and Potatoes of the plugin
@@ -197,6 +258,8 @@ class Worpit_CustomContentByCountry {
 	public static function getVisitorCountryCode() {
 		if ( isset($_SERVER["HTTP_CF_IPCOUNTRY"]) ) {
 			$sCode = $_SERVER["HTTP_CF_IPCOUNTRY"];
+		} else if ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
+			$sCode = 'localhost';
 		} else {
 			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
 			$sCode = $dbData->code;
@@ -217,11 +280,16 @@ class Worpit_CustomContentByCountry {
 	}
 	
 	public static function getVisitorCountryName() {
-
-		$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
-		$sCountry = $dbData->country;
+		
+		if ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
+			$sCountry = 'localhost';
+		} else {
+			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
+			$sCountry = $dbData->country;
+		}
 
 		return $sCountry;
+
 	}//getVisitorCountryName
 	
 	public function printVisitorCountryName( $inaAtts = array() ) {
@@ -262,7 +330,7 @@ class Worpit_CustomContentByCountry {
 	}
 	
 	public static function getVisitorCountryData() {
-
+		
 		global $wpdb;
 
 		$sIpAddress = Worpit_CustomContentByCountry::getVisitorIpAddress();
@@ -282,9 +350,6 @@ class Worpit_CustomContentByCountry {
 		return $sCountryData;
 
 	}//getVisitorCountryData
-	
-	public function printHelp() {
-	}
 	
 	private function importMysqlFile( $insFilename ) {
 		
@@ -326,17 +391,158 @@ class Worpit_CustomContentByCountry {
 		return true;
 	}//mysql_import
 	
-	private function def( &$aSrc, $insKey, $insValue = '' ) {
+	static public function getOption( $insKey ) {
+		return get_option( self::OptionPrefix.$insKey );
+	}
+	
+	static public function addOption( $insKey, $insValue ) {
+		return add_option( self::OptionPrefix.$insKey, $insValue );
+	}
+	
+	static public function updateOption( $insKey, $insValue ) {
+		if ( self::getOption( $insKey ) == $insValue ) {
+			return true;
+		}
+		$fResult = update_option( self::OptionPrefix.$insKey, $insValue );
+		if ( !$fResult ) {
+			$this->m_fUpdateSuccessTracker = false;
+			$this->m_aFailedUpdateOptions[] = self::OptionPrefix.$insKey;
+		}
+	}
+	
+	static public function deleteOption( $insKey ) {
+		return delete_option( self::OptionPrefix.$insKey );
+	}
+	
+}//CLASS
+
+class Worpit_Plugins_Base {
+
+	static public $VERSION;
+
+	static public $PLUGIN_NAME;
+	static public $PLUGIN_PATH;
+	static public $PLUGIN_DIR;
+	static public $PLUGIN_URL;
+	static public $PLUGIN_BASENAME;
+
+	const ParentTitle		= 'Worpit';
+	const ParentName		= 'Worpit';
+	const ParentPermissions	= 'manage_options';
+	const ParentMenuId		= 'worpit';
+	const VariablePrefix	= 'worpit_';
+
+	const ViewExt			= '.php';
+	const ViewDir			= 'views';
+
+	public function __construct() {
+		add_action( 'plugins_loaded', array( &$this, 'onWpPluginsLoaded' ) );
+		add_action( 'init', array( &$this, 'onWpInit' ), 1 );
+		add_action( 'admin_init', array( &$this, 'onWpAdminInit' ) );
+		add_action( 'admin_notices', array( &$this, 'onWpAdminNotices' ) );
+	}
+
+	protected function fixSubmenu() {
+		global $submenu;
+		if ( isset( $submenu[self::ParentMenuId] ) ) {
+			$submenu[self::ParentMenuId][0][0] = 'Dashboard';
+		}
+	}
+
+	protected function redirect( $insUrl, $innTimeout = 1 ) {
+		echo '
+		<script type="text/javascript">
+		function redirect() {
+			window.location = "'.$insUrl.'";
+		}
+		var oTimer = setTimeout( "redirect()", "'.($innTimeout * 1000).'" );
+		</script>';
+	}
+
+	protected function display( $insView, $inaData = array() ) {
+		$sFile = dirname(__FILE__).DS.'..'.DS.self::ViewDir.DS.$insView.self::ViewExt;
+
+		if ( !is_file( $sFile ) ) {
+			echo "View not found: ".$sFile;
+			return false;
+		}
+
+		if ( count( $inaData ) > 0 ) {
+			extract( $inaData, EXTR_PREFIX_ALL, 'wpv' );
+		}
+
+		ob_start();
+		include( $sFile );
+		$sContents = ob_get_contents();
+		ob_end_clean();
+
+		echo $sContents;
+		return true;
+	}
+
+	protected function getImageUrl( $insImage ) {
+		return self::$PLUGIN_URL.'images/'.$insImage;
+	}
+
+	protected function getSubmenuPageTitle( $insTitle ) {
+		return self::ParentTitle.' - '.$insTitle;
+	}
+
+	protected function getSubmenuId( $insId ) {
+		return self::ParentMenuId.'-'.$insId;
+	}
+
+	public function onWpInit() {  }
+
+	public function onWpAdminInit() {
+		add_action( 'admin_menu', array( &$this, 'onWpAdminMenu' ) );
+		add_action( 'plugin_action_links', array( &$this, 'onWpPluginActionLinks' ), 10, 4 );
+	}
+
+	public function onWpPluginsLoaded() { }
+
+	public function onWpAdminMenu() {
+	//	add_menu_page( self::ParentTitle, self::ParentName, self::ParentPermissions, self::ParentMenuId, array( $this, 'onDisplayMainMenu' ), $this->getImageUrl( 'toaster_16x16.png' ) );
+	}
+	
+	public function onWpAdminNotices() {	
+	}
+
+	public function onDisplayMainMenu() {
+		$aData = array(
+			'plugin_url'	=> self::$PLUGIN_URL
+		);
+		$this->display( 'worpit_index', $aData );
+	}
+
+	public function onWpPluginActionLinks( $inaLinks, $insFile ) {
+		if ( $insFile == self::$PLUGIN_BASENAME ) {
+			$sSettingsLink = '<a href="'.admin_url( "admin.php" ).'?page='.self::ParentMenuId.'">' . __( 'Settings', 'worpit' ) . '</a>';
+			array_unshift( $inaLinks, $sSettingsLink );
+		}
+		return $inaLinks;
+	}
+	
+	/**
+	 * Takes an array, an array key, and a default value. If key isn't set, sets it to default.
+	 */
+	protected function def( &$aSrc, $insKey, $insValue = '' ) {
 		if ( !isset( $aSrc[$insKey] ) ) {
 			$aSrc[$insKey] = $insValue;
 		}
 	}
-	private function noEmptyElement( &$inaArgs, $insAttrKey, $insElement = '' ) {
+	/**
+	 * Takes an array, an array key and an element type. If value is empty, sets the html element
+	 * string to empty string, otherwise forms a complete html element parameter.
+	 * 
+	 * E.g. noEmptyElement( aSomeArray, sSomeArrayKey, "style" )
+	 * will return String: style="aSomeArray[sSomeArrayKey]"  or empty string.
+	 */
+	protected function noEmptyElement( &$inaArgs, $insAttrKey, $insElement = '' ) {
 		$sAttrValue = $inaArgs[$insAttrKey];
 		$insElement = ( $insElement == '' )? $insAttrKey : $insElement;
 		$inaArgs[$insAttrKey] = ( empty($sAttrValue) ) ? '' : ' '.$insElement.'="'.$sAttrValue.'"';
 	}
-	
-}//CLASS
+}
 
 new Worpit_CustomContentByCountry( true );

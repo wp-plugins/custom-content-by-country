@@ -4,7 +4,7 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4
-Stable tag: 1.0
+Stable tag: 1.1
 
 == Description ==
 
@@ -115,11 +115,26 @@ ip2nationCountries
 
 == Changelog ==
 
+= 1.1 =
+
+* Tidied up the code A LOT.
+* Improved the Admin Notices and DB update process, and is now using the correct WordPress action hooks.
+* Added special case for local testing, where if your IP Address is detected as 127.0.0.1, country and country code will be 'localhost'.
+* Began coding for adding some nice features later.
+
 = 1.0 =
 
 * First Release
 
 == Upgrade Notice ==
+
+= 1.1 =
+
+* ADDED: Shortcode [CBC_CODE/] - which will print your country code.
+* ADDED: Special case for local testing, where if your IP Address is detected as 127.0.0.1, country and country code will be detected as 'localhost'.
+* Tidied up the code A LOT.
+* Improved the Admin Notices and DB update process, and is now using the correct WordPress action hooks.
+* Began coding for adding some nice features later.
 
 = 1.0 =
 
