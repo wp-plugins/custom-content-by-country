@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 1.1
+Version: 2.0
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -31,37 +31,56 @@ Author URI: http://worpit.com/
 
 define( 'DS', DIRECTORY_SEPARATOR );
 
+include_once( dirname(__FILE__).'/src/worpit-plugins-base.php' );
+
 class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
-	const Ip2NationDbVersion = '20120210';
+	const Ip2NationDbVersion = '20120603';
 	
-	const OptionPrefix	= 'worpit_cbc_';
+	const OptionPrefix	= 'cbc_';
 	const Ip2NationDbVersionKey = 'ip2nation_version';
+	
+	protected $m_aAmazonSitesData;
+	protected $m_aAmazonCountryCodeToSiteMap;
+	
+	protected $m_aPluginOptions_EnableSection;
+	protected $m_aPluginOptions_AffTagsSection;
 	
 	protected $m_fIp2NationsDbInstall;
 	protected $m_fIp2NationsDbInstallAttempt;
-	
-	protected $m_fUpdateSuccessTracker;
-	protected $m_aFailedUpdateOptions;
+	protected $m_fSubmitCbcMainAttempt;
 	
 	public function __construct(){
 		parent::__construct();
 
-		self::$VERSION		= '1.1'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+		register_activation_hook( __FILE__, array( &$this, 'onWpActivatePlugin' ) );
+		register_deactivation_hook( __FILE__, array( &$this, 'onWpDeactivatePlugin' ) );
+	//	register_uninstall_hook( __FILE__, array( &$this, 'onWpUninstallPlugin' ) );
+
+		self::$VERSION		= '2.0'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 		
 		self::$PLUGIN_NAME	= basename(__FILE__);
 		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );
 		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.DS.self::$PLUGIN_PATH.DS;
 		self::$PLUGIN_URL	= WP_PLUGIN_URL.'/'.self::$PLUGIN_PATH.'/';
+		self::$OPTION_PREFIX = self::BaseOptionPrefix . self::OptionPrefix;
 		
 		$this->m_fIp2NationsDbInstall = false;
 		$this->m_fIp2NationsDbInstallAttempt = false;
+		$this->m_fSubmitCbcMainAttempt = false;
+		
+		$this->m_sParentMenuIdSuffix = 'cbc';
 	}//__construct
 
 	public function onWpInit() {
 		parent::onWpInit();
 
-		$this->initializeShortcodes();
+		$this->initShortcodes();
+		
+		//Don't init Amazon data if the option is turned off.
+		if ( $this->getOption( 'enable_amazon_associate' ) === 'Y') {
+			$this->initAmazonData();
+		}
 	}
 
 	public function onWpAdminInit() {
@@ -69,40 +88,167 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 		$this->installIp2NationsDb();
 	}
-
-	public function onWpPluginsLoaded() {
-		parent::onWpPluginsLoaded();
-	}
 	
-	public function onWpAdminMenu() {
-		parent::onWpAdminMenu();
-	//	add_submenu_page( self::ParentMenuId, $this->getSubmenuPageTitle( 'Bootstrap CSS' ), 'Bootstrap CSS', self::ParentPermissions, $this->getSubmenuId( 'bootstrap-css' ), array( &$this, 'onDisplayIndex' ) );
-	//	$this->fixSubmenu();
-	}
+	protected function createPluginSubMenuItems(){
+		$this->m_aPluginMenu = array(
+				//Menu Page Title => Menu Item name, page ID (slug), callback function for this page - i.e. what to do/load.
+				$this->getSubmenuPageTitle( 'Content by Country' ) => array( 'Content by Country', $this->getSubmenuId('main'), 'onDisplayCbcMain' ),
+			);
+	}//createPluginSubMenuItems
 	
-	protected function initializeShortcodes() {
-	
-		$this->createShortcodeArray();
+	public function onWpAdminNotices() {
 		
-		if ( function_exists('add_shortcode') ) {
+		//Do we have admin priviledges?
+		if ( !current_user_can( 'manage_options' ) ) {
+			return;
+		}
+		
+		$this->adminNoticeIp2NationsDb();
+		$this->adminNoticeOptionsUpdated();
+		$this->adminNoticeVersionUpgrade();
+	}
+	
+	public function onWpDeactivatePlugin() {
+		
+		if ( !$this->initPluginOptions() ) {
+			return;
+		}
+
+		$this->deleteAllPluginDbOptions();
+	
+	}//onWpDeactivatePlugin
+	
+	public function onWpActivatePlugin() {
+	}//onWpActivatePlugin
+	
+	protected function handlePluginUpgrade() {
+		
+		//Someone clicked the button to acknowledge the update
+		if ( isset( $_POST['worpit_hide_update_notice'] ) && isset( $_POST['worpit_user_id'] ) ) {
+			$result = update_user_meta( $_POST['worpit_user_id'], 'worpit_cbc_current_version', self::$VERSION );
+			header( "Location: admin.php?page=".$this->getFullParentMenuId() );
+		}
+	}
+	
+	/**
+	 * Override for specify the plugin's options
+	 */
+	protected function initPluginOptions() {
+		
+		$this->m_aPluginOptions_EnableSection = 	array(
+				'section_title' => 'Enable Content By Country Plugin Options',
+				'section_options' => array(
+					array( 'enable_content_by_country',	'',		'N', 		'checkbox',		'Content By Country', 'Enable Content by Country Feature', "Provides the shortcodes for showing/hiding content based on visitor's location." ),
+					array( 'enable_amazon_associate',	'',		'N', 		'checkbox',		'Amazon Associates', 'Enable Amazon Associates Feature', "Provides the shortcode to use Amazon Associate links based on visitor's location." ),
+			),
+		);
+		
+		$this->m_aPluginOptions_AffTagsSection = 	array(
+				'section_title' => 'Amazon Associate Tags by Region',
+				'section_options' => array(
+					array( 'afftag_amazon_region_us',		'',		'', 		'text',		'US Associate Tag', 'Specify your Amazon.com Associate Tag here:' ),
+					array( 'afftag_amazon_region_canada',	'',		'', 		'text',		'Canada Associate Tag', 'Specify your Amazon.ca Associate Tag here:' ),
+					array( 'afftag_amazon_region_uk',		'',		'', 		'text',		'U.K. Associate Tag', 'Specify your Amazon.co.uk Associate Tag here:' ),
+					array( 'afftag_amazon_region_france',	'',		'', 		'text',		'France Associate Tag', 'Specify your Amazon.fr Associate Tag here:' ),
+					array( 'afftag_amazon_region_germany',	'',		'', 		'text',		'Germany Associate Tag', 'Specify your Amazon.de Associate Tag here:' ),
+					array( 'afftag_amazon_region_italy',	'',		'', 		'text',		'Italy Associate Tag', 'Specify your Amazon.it Associate Tag here:' ),
+					array( 'afftag_amazon_region_spain',	'',		'', 		'text',		'Spain Associate Tag', 'Specify your Amazon.es Associate Tag here:' ),
+					array( 'afftag_amazon_region_japan',	'',		'', 		'text',		'Japan Associate Tag', 'Specify your Amazon.co.jp Associate Tag here:' ),
+					array( 'afftag_amazon_region_china',	'',		'', 		'text',		'China Associate Tag', 'Specify your Amazon.cn Associate Tag here:' ),
+			),
+		);
+
+		$this->m_aAllPluginOptions = array( &$this->m_aPluginOptions_EnableSection, &$this->m_aPluginOptions_AffTagsSection);
+		
+		return true;
+		
+	}//initPluginOptions
+	
+	/** BELOW IS SPECIFIC TO THIS PLUGIN **/
+	protected function handlePluginFormSubmit() {
+
+		if ( !$this->isWorpitPluginAdminPage() ) {
+			return;
+		}
+	
+		//Was a worpit-cbc form submitted?
+		if ( !isset( $_POST[self::$OPTION_PREFIX.'all_options_input'] ) ) {
+			return;
+		}
+
+		//Don't need to run isset() because previous function does this
+		switch ( $_GET['page'] ) {
+			case $this->getSubmenuId('main'):
+				$this->handleSubmit_main( );
+				return;
+		}
+	
+	}//handlePluginFormSubmit
+	
+	protected function handleSubmit_main() {
+		
+		$this->m_fSubmitCbcMainAttempt = true;
+		$this->updatePluginOptionsFromSubmit( $_POST[self::$OPTION_PREFIX.'all_options_input'] );
+	}
+	
+	/**
+	 * For each display, if you're creating a form, define the form action page and the form_submit_id
+	 * that you can then use as a guard to handling the form submit.
+	 */
+	public function onDisplayCbcMain() {
+		
+		//populates plugin options with existing configuration
+		$this->readyAllPluginOptions();
+		
+		//Specify what set of options are available for this page
+		$aAvailableOptions = array( &$this->m_aPluginOptions_EnableSection, &$this->m_aPluginOptions_AffTagsSection) ;
+		
+		$sAllInputOptions = $this->collateAllFormInputsForOptionsSection( $this->m_aPluginOptions_EnableSection );
+		$sAllInputOptions .= ','.$this->collateAllFormInputsForOptionsSection( $this->m_aPluginOptions_AffTagsSection );
+		
+		$aData = array(
+			'plugin_url'		=> self::$PLUGIN_URL,
+			'var_prefix'		=> self::$OPTION_PREFIX,
+			'aAllOptions'		=> $aAvailableOptions,
+			'all_options_input'	=> $sAllInputOptions,
+			'form_action'		=> 'admin.php?page='.$this->getFullParentMenuId().'-main'
+		);
+		
+		$this->display( 'worpit_cbc_main', $aData );
+	}//onDisplayCbcMain
+	
+	protected function initShortcodes() {
+	
+		$this->defineShortcodes();
+		
+		if ( function_exists('add_shortcode') && !empty( $this->m_aShortcodes ) ) {
 			foreach( $this->m_aShortcodes as $shortcode => $function_to_call ) {
 				add_shortcode($shortcode, array(&$this, $function_to_call) );
 			}//foreach
 		}
-	}//initializeShortcodes
+	}//initShortcodes
 
 	/**
 	 * Add desired shortcodes to this array.
 	 */
-	protected function createShortcodeArray() {
-		$this->m_aShortcodes = array(
-				'CBC'			=> 	'showContentByCountry',
-				'CBC_COUNTRY'	=>	'printVisitorCountryName',
-				'CBC_CODE'		=>	'printVisitorCountryCode',
-				'CBC_IP'		=>	'printVisitorIpAddress',
-				'CBC_HELP'		=>	'printHelp'
-		);
-	}
+	protected function defineShortcodes() {
+		
+		$this->m_aShortcodes = array();
+
+		if ( $this->getOption( 'enable_content_by_country' ) === 'Y' ) {
+			$this->m_aShortcodes = array(
+					'CBC'			=> 	'showContentByCountry',
+					'CBC_COUNTRY'	=>	'printVisitorCountryName',
+					'CBC_CODE'		=>	'printVisitorCountryCode',
+					'CBC_IP'		=>	'printVisitorIpAddress',
+					'CBC_HELP'		=>	'printHelp'
+			);
+		}
+		
+		if ( $this->getOption( 'enable_amazon_associate' ) === 'Y' ) {
+			$this->m_aShortcodes['CBC_AMAZON']	=	'printAmazonLinkByCountry';
+		}
+	}//defineShortcodes
 	
 	private function installIp2NationsDb() {
 		
@@ -111,43 +257,33 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			return;
 		}
 
-		$sDbVersion = get_option( self::OptionPrefix.self::Ip2NationDbVersionKey );
+		$sDbVersion = self::getOption( self::Ip2NationDbVersionKey );
 
 		//jump out if the DB version is already up-to-date.
 		if ( $sDbVersion === self::Ip2NationDbVersion ) {
 			return;
 		}
-
+		
 		//At this stage, we've determined that the currently installed IP-2-Nation is non-existent or out of date.
 		//Is the install flag set?
 		if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' ) {
 			$this->m_fIp2NationsDbInstallAttempt = true;	//used later for admin notices
 			$this->m_fIp2NationsDbInstall = $this->importMysqlFile( dirname(__FILE__).DS.'inc'.DS.'ip2nation'.DS.'ip2nation.sql' );
-			update_option( self::OptionPrefix.self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
+			self::updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
 		}
-			
+
 	}//installIp2NationsDb
-	
-	public function onWpAdminNotices() {
-		
-		$this->adminNoticeIp2NationsDb();
-		
-	}
 	
 	private function adminNoticeIp2NationsDb() {
 		
-		//Do we have admin priviledges?
-		if ( !current_user_can( 'manage_options' ) ) {
-			return;
-		}
-		
-		$sDbVersion = get_option( self::OptionPrefix.self::Ip2NationDbVersionKey );
+		$sDbVersion = self::getOption( self::Ip2NationDbVersionKey );
+		$sClass = 'updated';
 	
 		if ( !isset( $_GET['CBC_INSTALL_DB'] ) && $sDbVersion !== self::Ip2NationDbVersion ) {
 			//At this stage, we've determined that the currently installed IP-2-Nation is non-existent or out of date.
 			$sNotice = '
 					<form method="post" action="index.php?CBC_INSTALL_DB=install" id="cbc_install_db">
-						<p><strong>The IP-2-Nations data needs to be installed before you can use the <em>Content By Country</em> plugin.</strong>
+						<p><strong>The IP-2-Nations data needs to be updated/installed before you can use the <em>Content By Country</em> plugin.</strong>
 						<input type="submit" value="Click here to install now (it may take a few seconds - click only ONCE)"
 						name="cbc_submit" id="cbc_submit" class="button-primary" onclick="changeSubmitButton()">
 						</p>
@@ -161,44 +297,64 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 						}
 					</script>
 			';
-			$this->getAdminNotice($sNotice, true);
+			$this->getAdminNotice($sNotice, $sClass, true);
 
 		} else if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' && $this->m_fIp2NationsDbInstallAttempt ) {
 			
 			if ( $this->m_fIp2NationsDbInstall ) {
 				$sNotice = '<p><strong>Success</strong>: The IP-2-Nations data was automatically installed successfully for the "Content By Country" plugin.</p>';
-				$this->getAdminNotice($sNotice, true);
+				$this->getAdminNotice($sNotice, $sClass, true);
 			} else {
 				$sNotice = '<p>The IP-2-Nations data was <strong>NOT</strong> successfully installed. For perfomance reasons, only 1 attempt is ever made - you will have to do so manually.</p>';
-				$this->getAdminNotice($sNotice, true);
+				$sClass = 'error';
+				$this->getAdminNotice($sNotice, $sClass, true);
 			}
 		}
 		
 	}//adminNoticeIp2NationsDb
 	
-	private function getAdminNotice( $insNotice = '', $infPrint = false ) {
+	private function adminNoticeOptionsUpdated() {
 		
-		$sFullNotice = '
-			<div id="message" class="updated">
-				<style>
-					#message form {
-						margin: 0px;
-					}
-				</style>
-				'.$insNotice.'
-			</div>
-		';
-		
-		if ( $infPrint ) {
-			echo $sFullNotice;
-			return true;
-		} else {
-			return $sFullNotice;
+		//Admin notice for Main Options page submit.
+		if ( $this->m_fSubmitCbcMainAttempt ) {
+			
+			if ( $this->m_fUpdateSuccessTracker ) {
+				$sNotice = '<p>Updating CBC Plugin Options was a <strong>Success</strong>.</p>';
+				$sClass = 'updated';
+			} else {
+				$sNotice = '<p>Updating CBC Plugin Options <strong>Failed</strong>.</p>';
+				$sClass = 'error';
+			}
+			$this->getAdminNotice($sNotice, $sClass, true);
 		}
-	}//printAdminNotice
+	}//adminNoticeOptionsUpdated
+	
+	private function adminNoticeVersionUpgrade() {
+
+		global $current_user;
+		$user_id = $current_user->ID;
+
+		$sCurrentVersion = get_user_meta( $user_id, self::$OPTION_PREFIX.'current_version', true );
+
+		if ( $sCurrentVersion !== self::$VERSION ) {
+			$sNotice = '
+					<form method="post" action="admin.php?page='.$this->getFullParentMenuId().'">
+						<p><strong>Custom Content By Country</strong> plugin has been updated. Worth checking out the latest docs.
+						<input type="hidden" value="1" name="worpit_hide_update_notice" id="worpit_hide_update_notice">
+						<input type="hidden" value="'.$user_id.'" name="worpit_user_id" id="worpit_user_id">
+						<input type="submit" value="Okay, show me and hide this notice" name="submit" class="button-primary">
+						</p>
+					</form>
+			';
+			
+			$this->getAdminNotice( $sNotice, 'updated', true );
+		}
+		
+	}//adminNoticeVersionUpgrade
+	
 
 	/**
-	 * Meat and Potatoes of the plugin
+	 * Meat and Potatoes of the CBC plugin
 	 * 
 	 * By default, $insContent will be "shown" for whatever countries are specified.
 	 * 
@@ -245,24 +401,29 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		} else {
 	 		$sOutput = do_shortcode($inaAtts['message']);
 		}
-		
+
 		return '<span class="cbc_content"'
 					.$inaAtts['style']
 					.$inaAtts['id'].'>'.$sOutput.'</span>';
-		
+
 	}//showContentByCountry
 	
 	/**
-	 * Uses a CloudFlare $_SERVER var if possible.
+	 * Uses a CloudFlare $_SERVER var if available.
 	 */
 	public static function getVisitorCountryCode() {
+		
+		$sCode = 'us';
+		
 		if ( isset($_SERVER["HTTP_CF_IPCOUNTRY"]) ) {
 			$sCode = $_SERVER["HTTP_CF_IPCOUNTRY"];
 		} else if ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
 			$sCode = 'localhost';
 		} else {
 			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
-			$sCode = $dbData->code;
+			if ( !in_null($dbData) ) {
+				$sCode = $dbData->code;
+			}
 		}
 		return $sCode;
 	}//getVisitorCountryCode
@@ -278,7 +439,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 					.$inaAtts['style']
 					.$inaAtts['id'].'>'.$this->getVisitorCountryCode().'</span>';
 	}
-	
+
 	public static function getVisitorCountryName() {
 		
 		if ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
@@ -351,6 +512,138 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 	}//getVisitorCountryData
 	
+	
+	/** AMAZON FUNCTIONALITY **/
+	
+	protected function initAmazonData() {
+		
+		//Defines all the currently existing Amazon sites, their domain and their database option key
+		$this->m_aAmazonSitesData = array(
+			'global'	=>	array( 'com',		'afftag_amazon_region_us'		),
+			'ca'		=>	array( 'ca',		'afftag_amazon_region_canada'	),
+			'uk'		=>	array( 'co.uk',		'afftag_amazon_region_uk'		),
+			'fr'		=>	array( 'fr',		'afftag_amazon_region_france'	),
+			'de'		=>	array( 'de',		'afftag_amazon_region_germany'	),
+			'it'		=>	array( 'it',		'afftag_amazon_region_italy'	),
+			'es'		=>	array( 'es',		'afftag_amazon_region_spain'	),
+			'jp'		=>	array( 'co.jp',		'afftag_amazon_region_japan'	),
+			'cn'		=>	array( 'cn',		'afftag_amazon_region_china'	),
+		);
+		
+		//Map country codes that don't exist to other Amazon Sites 
+		$this->m_aAmazonCountryCodeToSiteMap = array(
+			//country code	//Amazon site
+			'us'			=>	'global',	//US is the default
+			'ie'			=>	'uk',
+		);
+		
+	}//initAmazonData
+	
+	/**
+	 * The Shortcode function for CBC_AMAZON
+	 * 
+	 * @param unknown_type $inaAtts
+	 * @param unknown_type $insContent
+	 */
+	public function printAmazonLinkByCountry( $inaAtts = array(), $insContent = '' ) {
+	
+		$this->def( &$inaAtts, 'item' );
+		$this->def( &$inaAtts, 'text', $insContent );
+		$this->def( &$inaAtts, 'asin' );
+		$this->def( &$inaAtts, 'country' );
+		
+		$sAsinToUse;
+		
+		if ($inaAtts['asin'] != '') {
+			$sAsinToUse = $inaAtts['asin'];
+		} else {
+			$inaAtts['item'] = strtolower($inaAtts['item']);
+			if ( array_key_exists($inaAtts['item'], $this->m_aPreselectedAffItems ) ) {
+				$sAsinToUse = $this->m_aPreselectedAffItems[ $inaAtts['item'] ];
+			} else {
+				return ''; //ASIN is undefined or the "item" does not exist.
+			}
+		}
+
+		if ( empty($inaAtts['country']) ) {
+			$sLink = $this->buildAffLinkFromAsinOnly( $sAsinToUse );
+		} else {
+			$sLink = $this->buildAffLinkFromCountryCode( $sAsinToUse, $inaAtts['country'] );
+		}
+		
+		$sOutputText = '<a class="cbc_amazon_link" href="'.$sLink.'" target="_blank">'.do_shortcode($inaAtts['text']).'</a>';
+		
+		return $sOutputText;
+		
+	}//printAmazonLinkByCountry
+	
+	public function buildAffLinkFromAsinOnly( $insAsin ) {
+		
+		//Default country code to US. (amazon.com)
+		$sCountryCode = strtolower( $this->getVisitorCountryCode() );
+		
+		return $this->buildAffLinkFromCountryCode( $insAsin, $sCountryCode );
+
+	}//buildAffLinkFromAsinOnly
+
+	/**
+	 * Given the country code and the product ASIN code, returns an Amazon link.
+	 * 
+	 * If the country code isn't found in the country code mapping, 'global' (amazon.com) is used.
+	 * 
+	 * @param unknown_type $insCountryCode
+	 * @param unknown_type $insAsin
+	 */
+	public function buildAffLinkFromCountryCode( $insAsin, $insCountryCode ) {
+		
+		$sAmazonSiteCode = 'global';	//the default: amazon.com
+		
+		if ( array_key_exists($insCountryCode, $this->m_aAmazonCountryCodeToSiteMap) ) {
+			
+			//special country code mapping that has been provisioned for. e.g. ie => uk amazon site
+			$sAmazonSiteCode = $this->m_aAmazonCountryCodeToSiteMap[$insCountryCode];
+			
+		} else if ( array_key_exists($insCountryCode, $this->m_aAmazonSitesData) ) {
+			
+			$sAmazonSiteCode = $insCountryCode;
+			
+		}
+				
+		return $this->buildAffLinkFromAmazonSite( $insAsin, $sAmazonSiteCode );
+
+	}//buildAffLinkFromCountryCode
+	
+	/**
+	 * Give it an Amazon site (defaults to "global") and an ASIN and it will create it.
+	 * 
+	 * @param $insAmazonSite
+	 * @param $insAsin
+	 */
+	public function buildAffLinkFromAmazonSite( $insAsin = '', $insAmazonSite = 'global' ) {
+
+		if ( !array_key_exists($insAmazonSite, $this->m_aAmazonSitesData) ) {
+			$insAmazonSite = 'global';
+		}
+		
+		list( $sAmazonDomain, $sAssociateIdTag ) = $this->m_aAmazonSitesData[$insAmazonSite];
+		
+		$sAssociateIdTag = $this->getOption( $sAssociateIdTag );
+		
+		return $this->buildAffLinkAmazon( $insAsin, $sAmazonDomain, $sAssociateIdTag );
+		
+	}//buildAffLinkFromAmazonSite
+	
+	/**
+	 * The most basic link builder. 
+	 */
+	public static function buildAffLinkAmazon( $insAsin = '', $insAmazonDomain = 'com', $insAffIdTag = '' ) {
+
+		$sLink  = 'http://www.amazon.'.$insAmazonDomain;
+		$sLink .= '/dp/'.$insAsin.'/?tag='.$insAffIdTag.'&creativeASIN='.$insAsin;
+		
+		return $sLink;
+	}
+	
 	private function importMysqlFile( $insFilename ) {
 		
 		global $wpdb;
@@ -391,158 +684,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		return true;
 	}//mysql_import
 	
-	static public function getOption( $insKey ) {
-		return get_option( self::OptionPrefix.$insKey );
-	}
-	
-	static public function addOption( $insKey, $insValue ) {
-		return add_option( self::OptionPrefix.$insKey, $insValue );
-	}
-	
-	static public function updateOption( $insKey, $insValue ) {
-		if ( self::getOption( $insKey ) == $insValue ) {
-			return true;
-		}
-		$fResult = update_option( self::OptionPrefix.$insKey, $insValue );
-		if ( !$fResult ) {
-			$this->m_fUpdateSuccessTracker = false;
-			$this->m_aFailedUpdateOptions[] = self::OptionPrefix.$insKey;
-		}
-	}
-	
-	static public function deleteOption( $insKey ) {
-		return delete_option( self::OptionPrefix.$insKey );
-	}
-	
 }//CLASS
 
-class Worpit_Plugins_Base {
 
-	static public $VERSION;
-
-	static public $PLUGIN_NAME;
-	static public $PLUGIN_PATH;
-	static public $PLUGIN_DIR;
-	static public $PLUGIN_URL;
-	static public $PLUGIN_BASENAME;
-
-	const ParentTitle		= 'Worpit';
-	const ParentName		= 'Worpit';
-	const ParentPermissions	= 'manage_options';
-	const ParentMenuId		= 'worpit';
-	const VariablePrefix	= 'worpit_';
-
-	const ViewExt			= '.php';
-	const ViewDir			= 'views';
-
-	public function __construct() {
-		add_action( 'plugins_loaded', array( &$this, 'onWpPluginsLoaded' ) );
-		add_action( 'init', array( &$this, 'onWpInit' ), 1 );
-		add_action( 'admin_init', array( &$this, 'onWpAdminInit' ) );
-		add_action( 'admin_notices', array( &$this, 'onWpAdminNotices' ) );
-	}
-
-	protected function fixSubmenu() {
-		global $submenu;
-		if ( isset( $submenu[self::ParentMenuId] ) ) {
-			$submenu[self::ParentMenuId][0][0] = 'Dashboard';
-		}
-	}
-
-	protected function redirect( $insUrl, $innTimeout = 1 ) {
-		echo '
-		<script type="text/javascript">
-		function redirect() {
-			window.location = "'.$insUrl.'";
-		}
-		var oTimer = setTimeout( "redirect()", "'.($innTimeout * 1000).'" );
-		</script>';
-	}
-
-	protected function display( $insView, $inaData = array() ) {
-		$sFile = dirname(__FILE__).DS.'..'.DS.self::ViewDir.DS.$insView.self::ViewExt;
-
-		if ( !is_file( $sFile ) ) {
-			echo "View not found: ".$sFile;
-			return false;
-		}
-
-		if ( count( $inaData ) > 0 ) {
-			extract( $inaData, EXTR_PREFIX_ALL, 'wpv' );
-		}
-
-		ob_start();
-		include( $sFile );
-		$sContents = ob_get_contents();
-		ob_end_clean();
-
-		echo $sContents;
-		return true;
-	}
-
-	protected function getImageUrl( $insImage ) {
-		return self::$PLUGIN_URL.'images/'.$insImage;
-	}
-
-	protected function getSubmenuPageTitle( $insTitle ) {
-		return self::ParentTitle.' - '.$insTitle;
-	}
-
-	protected function getSubmenuId( $insId ) {
-		return self::ParentMenuId.'-'.$insId;
-	}
-
-	public function onWpInit() {  }
-
-	public function onWpAdminInit() {
-		add_action( 'admin_menu', array( &$this, 'onWpAdminMenu' ) );
-		add_action( 'plugin_action_links', array( &$this, 'onWpPluginActionLinks' ), 10, 4 );
-	}
-
-	public function onWpPluginsLoaded() { }
-
-	public function onWpAdminMenu() {
-	//	add_menu_page( self::ParentTitle, self::ParentName, self::ParentPermissions, self::ParentMenuId, array( $this, 'onDisplayMainMenu' ), $this->getImageUrl( 'toaster_16x16.png' ) );
-	}
-	
-	public function onWpAdminNotices() {	
-	}
-
-	public function onDisplayMainMenu() {
-		$aData = array(
-			'plugin_url'	=> self::$PLUGIN_URL
-		);
-		$this->display( 'worpit_index', $aData );
-	}
-
-	public function onWpPluginActionLinks( $inaLinks, $insFile ) {
-		if ( $insFile == self::$PLUGIN_BASENAME ) {
-			$sSettingsLink = '<a href="'.admin_url( "admin.php" ).'?page='.self::ParentMenuId.'">' . __( 'Settings', 'worpit' ) . '</a>';
-			array_unshift( $inaLinks, $sSettingsLink );
-		}
-		return $inaLinks;
-	}
-	
-	/**
-	 * Takes an array, an array key, and a default value. If key isn't set, sets it to default.
-	 */
-	protected function def( &$aSrc, $insKey, $insValue = '' ) {
-		if ( !isset( $aSrc[$insKey] ) ) {
-			$aSrc[$insKey] = $insValue;
-		}
-	}
-	/**
-	 * Takes an array, an array key and an element type. If value is empty, sets the html element
-	 * string to empty string, otherwise forms a complete html element parameter.
-	 * 
-	 * E.g. noEmptyElement( aSomeArray, sSomeArrayKey, "style" )
-	 * will return String: style="aSomeArray[sSomeArrayKey]"  or empty string.
-	 */
-	protected function noEmptyElement( &$inaArgs, $insAttrKey, $insElement = '' ) {
-		$sAttrValue = $inaArgs[$insAttrKey];
-		$insElement = ( $insElement == '' )? $insAttrKey : $insElement;
-		$inaArgs[$insAttrKey] = ( empty($sAttrValue) ) ? '' : ' '.$insElement.'="'.$sAttrValue.'"';
-	}
-}
-
-new Worpit_CustomContentByCountry( true );
+new Worpit_CustomContentByCountry( );
