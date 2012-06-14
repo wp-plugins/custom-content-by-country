@@ -7,7 +7,7 @@
 
 	<div class="page-header">
 		<a href="http://worpit.com/"><div class="icon32" id="worpit-icon"><br /></div></a>
-		<h2><?php _hlt_e( 'Dashboard :: Custom Content By Country from Worpit' ); ?></h2>
+		<h2>Dashboard :: Custom Content By Country from Worpit</h2>
 	</div>
 
 	<div class="row">

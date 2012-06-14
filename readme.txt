@@ -118,6 +118,10 @@ ip2nationCountries
 
 == Changelog ==
 
+= 2.1 =
+
+* FIXED: Bug with incomplete internationalisation functions. Will complete for a later release.
+
 = 2.0 =
 
 * UPDATED: the IP 2 Nation database to the version released 3rd June 2012. You will be prompted to run the database upgrade after the plugin is installed.
@@ -141,6 +145,10 @@ and the plugin will automatically use it with the appropriate site and generate 
 * First Release
 
 == Upgrade Notice ==
+
+= 2.1 =
+
+* FIXED: Bug with incomplete internationalisation functions. Will complete for a later release.
 
 = 2.0 =
 

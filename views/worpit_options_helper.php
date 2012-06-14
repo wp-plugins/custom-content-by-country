@@ -145,41 +145,8 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 
-		} else if ( $mOptionType === 'less_color' ) {
+		} else if ( strpos( $mOptionType, 'less_' ) === 0 ) {	//dealing with the LESS compiler options
 
-			if ( empty($sOptionSaved) ) {
-				$sOptionSaved = $sOptionDefault;
-			}
-			
-			if ( !getIsHexColour( $sOptionSaved ) ) {
-				$sChecked = ' checked';
-			}
-			
-			$sHtml .= '<input class="span2'.$sAdditionalClass.'"
-						type="text"
-						placeholder="'.esc_attr( $sOptionSaved ).'"
-						name="'.$insVarPrefix.$sOptionKey.'"
-						value="'.esc_attr( $sOptionSaved ).'"
-						id="'.$insVarPrefix.$sOptionKey.'" />';
-			
-			$sToggleTextInput= ' <span class="toggle_checkbox">
-						  <label>
-							<input type="checkbox"
-								name="hlt_toggle_'.$sOptionKey.'"
-								id="hlt_toggle_'.$sOptionKey.'"'.$sChecked.'
-								style="vertical-align: -2px;" /> edit as text
-						  </label>
-						</span>';
-			
-			$sHelpSection = '
-					<div class="help_section">
-						<span class="label label-less-name">@'.str_replace( HLT_BootstrapLess::$LESS_PREFIX, '', $sOptionKey ).'</span>
-						'.$sToggleTextInput.'
-						<span class="label label-less-name">'.$sOptionDefault.'</span>
-					</div>';
-
-		} else if ( $mOptionType === 'less_size' || $mOptionType === 'less_font' ) {
-			
 			if ( empty($sOptionSaved) ) {
 				$sOptionSaved = $sOptionDefault;
 			}
@@ -191,12 +158,36 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 						value="'.esc_attr( $sOptionSaved ).'"
 						id="'.$insVarPrefix.$sOptionKey.'" />';
 			
+			$sToggleTextInput = '';
+			
+			if ( $mOptionType === 'less_color' ) {
+				
+				if ( !getIsHexColour( $sOptionSaved ) ) {
+					$sChecked = ' checked';
+				}
+				
+				$sToggleTextInput= '
+							<span class="toggle_checkbox">
+							  <label>
+								<input type="checkbox"
+									name="hlt_toggle_'.$sOptionKey.'"
+									id="hlt_toggle_'.$sOptionKey.'"'.$sChecked.'
+									style="vertical-align: -2px;" /> edit as text
+							  </label>
+							</span>';
+				
+			} else if ( $mOptionType === 'less_size' || $mOptionType === 'less_font' ) {
+			}
+			
 			$sHelpSection = '
 					<div class="help_section">
 						<span class="label label-less-name">@'.str_replace( HLT_BootstrapLess::$LESS_PREFIX, '', $sOptionKey ).'</span>
 						'.$sToggleTextInput.'
 						<span class="label label-less-name">'.$sOptionDefault.'</span>
 					</div>';
+			
+		} else {
+			echo 'we should never reach this point';
 		}
 		
 		$sHtml .= '

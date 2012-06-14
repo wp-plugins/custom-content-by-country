@@ -6,7 +6,7 @@ include_once( dirname(__FILE__).DS.'widgets'.DS.'worpit_widgets.php' );
 	<div class="bootstrap-wpadmin">
 		<div class="page-header">
 			<a href="http://worpit.com/"><div class="icon32" id="worpit-icon">&nbsp;</div></a>
-			<h2><?php _hlt_e( 'Content By Country Main Plugin Options' ); ?></h2>
+			<h2>Content By Country Main Plugin Options</h2>
 		</div>
 		<div class="row">
 			<div class="span9">
@@ -16,7 +16,7 @@ include_once( dirname(__FILE__).DS.'widgets'.DS.'worpit_widgets.php' );
 					?>
 					<div class="form-actions">
 						<input type="hidden" name="<?php echo $worpit_var_prefix.'all_options_input'; ?>" value="<?php echo $worpit_all_options_input; ?>" />
-						<button type="submit" class="btn btn-primary" name="submit"><?php _hlt_e( 'Save All Settings' ); ?></button>
+						<button type="submit" class="btn btn-primary" name="submit">Save All Settings</button>
 					</div>
 				</form>
 			</div><!-- / span9 -->
