@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.1
+Version: 2.2
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -57,7 +57,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		register_deactivation_hook( __FILE__, array( &$this, 'onWpDeactivatePlugin' ) );
 	//	register_uninstall_hook( __FILE__, array( &$this, 'onWpUninstallPlugin' ) );
 
-		self::$VERSION		= '2.1'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+		self::$VERSION		= '2.2'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 		
 		self::$PLUGIN_NAME	= basename(__FILE__);
 		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );
@@ -421,7 +421,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			$sCode = 'localhost';
 		} else {
 			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
-			if ( !in_null($dbData) ) {
+			if ( !is_null($dbData) ) {
 				$sCode = $dbData->code;
 			}
 		}

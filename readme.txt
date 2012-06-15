@@ -4,7 +4,7 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4
-Stable tag: 2.1
+Stable tag: 2.2
 
 == Description ==
 
@@ -118,6 +118,10 @@ ip2nationCountries
 
 == Changelog ==
 
+= 2.2 =
+
+* FIXED: Bug with undefined function error (thanks Merle!)
+
 = 2.1 =
 
 * FIXED: Bug with incomplete internationalisation functions. Will complete for a later release.
@@ -145,6 +149,10 @@ and the plugin will automatically use it with the appropriate site and generate 
 * First Release
 
 == Upgrade Notice ==
+
+= 2.2 =
+
+* FIXED: Bug with undefined function error.
 
 = 2.1 =
 
