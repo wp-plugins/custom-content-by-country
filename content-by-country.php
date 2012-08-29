@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.2
+Version: 2.3
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -35,7 +35,7 @@ include_once( dirname(__FILE__).'/src/worpit-plugins-base.php' );
 
 class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
-	const Ip2NationDbVersion = '20120603';
+	const Ip2NationDbVersion = '20120822';
 	
 	const OptionPrefix	= 'cbc_';
 	const Ip2NationDbVersionKey = 'ip2nation_version';
@@ -50,14 +50,14 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
+	static public $VERSION			= '2.3'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	
 	public function __construct(){
 		parent::__construct();
 
 		register_activation_hook( __FILE__, array( &$this, 'onWpActivatePlugin' ) );
 		register_deactivation_hook( __FILE__, array( &$this, 'onWpDeactivatePlugin' ) );
 	//	register_uninstall_hook( __FILE__, array( &$this, 'onWpUninstallPlugin' ) );
-
-		self::$VERSION		= '2.2'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 		
 		self::$PLUGIN_NAME	= basename(__FILE__);
 		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );

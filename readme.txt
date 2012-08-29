@@ -4,11 +4,11 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4
-Stable tag: 2.2
+Stable tag: 2.3
 
 == Description ==
 
-Custom Content by Country WordPress plugin from [Worpit](http://worpit.com/ "Worpit: Fast, Centralized WordPress Admin") 
+Custom Content by Country WordPress plugin from [Worpit](http://worpit.com/ "Worpit: Manage Muliple WordPress Sites Better") 
 offers you the option to show/hide content to users based on their location (where provided).
 
 With a simple shortcode you can specify, using a list of country codes whether to 
@@ -105,9 +105,15 @@ e.g. [CBC country="gb" show="y" id="my_cbc_id" style="color:yellow;"]Custom Cont
 = Do you make any other plugins? =
 
 Yes, we created the only [Twitter Bootstrap WordPress](http://worpit.com/wordpress-twitter-bootstrap-css-plugin-home/ "Twitter Bootstrap WordPress Plugin")
-plugin with over 10,000 downloads so far.
+plugin with over 20,000 downloads so far.
 
-We also created the [Worpit Administration Dashboard](http://worpit.com/?wordpress) for people with multiple WordPress sites to manage.
+We also created the [Manage Multiple WordPress Site Better Tool: Worpit](http://worpit.com/?src=wporg) for people with multiple WordPress sites to manage.
+
+= What "country code" can I use to test locally if I'm accessing a server on our network? =
+
+If your local network address is defined as "Private" according to the database, the country code to use in this case is: 01
+
+This isn't fully tested and shouldn't be used as-is in production but it seems to hold up.  Feedback welcome.
 
 = Is there an option to remove the data that was added to the DB by the plugin? =
 
@@ -117,6 +123,10 @@ ip2nation
 ip2nationCountries
 
 == Changelog ==
+
+= 2.3 =
+
+* UPDATED: The IP2Nations IP-to-Country database to latest release (August 22, 2012)
 
 = 2.2 =
 
@@ -137,7 +147,7 @@ and the plugin will automatically use it with the appropriate site and generate 
 
 = 1.1 =
 
-* ADDED: Shortcode [CBC_CODE/] - which will print your country code.
+* ADDED: Shortcode [CBC_CODE /] - which will print your country code.
 * ADDED: Special case for local testing, where if your IP Address is detected as 127.0.0.1, country and country code will be detected as 'localhost'.
 * Tidied up the code A LOT.
 * Improved the Admin Notices and DB update process, and is now using the correct WordPress action hooks.
@@ -149,6 +159,10 @@ and the plugin will automatically use it with the appropriate site and generate 
 * First Release
 
 == Upgrade Notice ==
+
+= 2.3 =
+
+* UPDATED: The IP2Nations IP-to-Country database to latest release (August 22, 2012)
 
 = 2.2 =
 
