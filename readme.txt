@@ -29,7 +29,7 @@ To learn how to use the plugin, see the [comprehensive FAQ](http://wordpress.org
 
 Currently there are 3 options/parameters: *country*, *show*, *message*
 
-country: is a comma-separated list of country codes, e.g. country="us, es, uk"
+country: a comma-separated list of country codes, e.g. country="us, es, uk"
 
 show: is a simple yes ('y') or no ('n'). e.g. to hide content, show="n"
 
@@ -56,7 +56,7 @@ Nothing, it will just print the content to everyone.
 
 = What is CloudFlare and how does it relate to this plugin? =
 
-If you're site isn't using CloudFlare, you really should consider it.
+If your site isn't using CloudFlare, you really should consider it.
 
 Separately, if you are using it on your site, you have a slight optimization where I use a parameter that
 CloudFlare sends that gives the users location saving me an SQL query.
@@ -71,10 +71,9 @@ to pay for this.
 No. The plugin, upon activation, will ask you to install the necessary data into your own WordPress database.
 If you don't install this data, you cannot use the plugin.
 
-= There's no plugin options page - why? =
+= Where can I find a list of the country codes? =
 
-Currently you don't need it. This plugin is as slim as it needs to be, with no frills. If you have any requests
-for related functionality, please let me know.
+I believe the country codes are ISO 3166 country codes. You can find a list here: http://en.wikipedia.org/wiki/ISO_3166-1
 
 = Are the any other shortcodes available in this plugin? =
 
@@ -104,10 +103,10 @@ e.g. [CBC country="gb" show="y" id="my_cbc_id" style="color:yellow;"]Custom Cont
 
 = Do you make any other plugins? =
 
+We also created the [Manage Multiple WordPress Site Better Tool: Worpit](http://worpit.com/?src=wporg) for people with multiple WordPress sites to manage.
+
 Yes, we created the only [Twitter Bootstrap WordPress](http://worpit.com/wordpress-twitter-bootstrap-css-plugin-home/ "Twitter Bootstrap WordPress Plugin")
 plugin with over 20,000 downloads so far.
-
-We also created the [Manage Multiple WordPress Site Better Tool: Worpit](http://worpit.com/?src=wporg) for people with multiple WordPress sites to manage.
 
 = What "country code" can I use to test locally if I'm accessing a server on our network? =
 
@@ -123,6 +122,14 @@ ip2nation
 ip2nationCountries
 
 == Changelog ==
+
+= TODO =
+
+* Add option to remove the ip2nations data from the database.
+
+= 2.4 =
+
+* ADDED: Now uses cookies to store country code and country name to reduce multiple SQL queries.
 
 = 2.3 =
 
@@ -159,6 +166,10 @@ and the plugin will automatically use it with the appropriate site and generate 
 * First Release
 
 == Upgrade Notice ==
+
+= 2.4 =
+
+* ADDED: Now uses cookies to store country code and country name to reduce multiple SQL queries.
 
 = 2.3 =
 

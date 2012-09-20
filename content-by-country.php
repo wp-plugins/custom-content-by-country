@@ -39,6 +39,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
 	const OptionPrefix	= 'cbc_';
 	const Ip2NationDbVersionKey = 'ip2nation_version';
+	const CbcDataCountryNameCookie = 'cbc_country_name';
+	const CbcDataCountryCodeCookie = 'cbc_country_code';
 	
 	protected $m_aAmazonSitesData;
 	protected $m_aAmazonCountryCodeToSiteMap;
@@ -49,6 +51,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstall;
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
+	
+	
 	
 	static public $VERSION			= '2.3'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
@@ -124,8 +128,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected function handlePluginUpgrade() {
 		
 		//Someone clicked the button to acknowledge the update
-		if ( isset( $_POST['worpit_hide_update_notice'] ) && isset( $_POST['worpit_user_id'] ) ) {
-			$result = update_user_meta( $_POST['worpit_user_id'], 'worpit_cbc_current_version', self::$VERSION );
+		if ( isset( $_POST[self::$OPTION_PREFIX.'hide_update_notice'] ) && isset( $_POST['worpit_user_id'] ) ) {
+			$result = update_user_meta( $_POST['worpit_user_id'], self::$OPTION_PREFIX.'current_version', self::$VERSION );
 			header( "Location: admin.php?page=".$this->getFullParentMenuId() );
 		}
 	}
@@ -340,7 +344,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			$sNotice = '
 					<form method="post" action="admin.php?page='.$this->getFullParentMenuId().'">
 						<p><strong>Custom Content By Country</strong> plugin has been updated. Worth checking out the latest docs.
-						<input type="hidden" value="1" name="worpit_hide_update_notice" id="worpit_hide_update_notice">
+						<input type="hidden" value="1" name="'.self::$OPTION_PREFIX.'hide_update_notice" id="'.self::$OPTION_PREFIX.'hide_update_notice">
 						<input type="hidden" value="'.$user_id.'" name="worpit_user_id" id="worpit_user_id">
 						<input type="submit" value="Okay, show me and hide this notice" name="submit" class="button-primary">
 						</p>
@@ -417,14 +421,26 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		
 		if ( isset($_SERVER["HTTP_CF_IPCOUNTRY"]) ) {
 			$sCode = $_SERVER["HTTP_CF_IPCOUNTRY"];
-		} else if ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
+		}
+		elseif ( isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) ) {
+			return $_COOKIE[ self::CbcDataCountryCodeCookie ];
+		}
+		elseif ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
 			$sCode = 'localhost';
-		} else {
+		} 
+		else {
 			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
 			if ( !is_null($dbData) ) {
 				$sCode = $dbData->code;
 			}
 		}
+		
+		//set the cookie for future reference if it hasn't been set yet.
+		if ( !isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) ) {
+			setcookie( self::CbcDataCountryCodeCookie, $sCode, time()+3600, COOKIEPATH, COOKIE_DOMAIN, false );
+			$_COOKIE[ self::CbcDataCountryCodeCookie ] = $sCode;
+		}
+		
 		return $sCode;
 	}//getVisitorCountryCode
 	
@@ -444,9 +460,19 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		
 		if ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
 			$sCountry = 'localhost';
-		} else {
+		}
+		elseif ( isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) ) {
+			return $_COOKIE[ self::CbcDataCountryNameCookie ];
+		}
+		else {
 			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
 			$sCountry = $dbData->country;
+		}
+		
+		//set the cookie for future reference if it hasn't been set yet.
+		if ( !isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) ) {
+			setcookie( self::CbcDataCountryNameCookie, $sCountry, time()+3600, COOKIEPATH, COOKIE_DOMAIN, false );
+			$_COOKIE[ self::CbcDataCountryNameCookie ] = $sCountry;
 		}
 
 		return $sCountry;
