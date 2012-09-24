@@ -126,6 +126,7 @@ ip2nationCountries
 = TODO =
 
 * Add option to remove the ip2nations data from the database.
+* Add option to add custom CSS directly for the SPANs that are printed.
 
 = 2.4 =
 
