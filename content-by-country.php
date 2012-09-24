@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.3
+Version: 2.4
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -52,9 +52,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	
-	
-	static public $VERSION			= '2.3'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.4'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -394,7 +392,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		$aSelectedCountries = explode(',', $inaAtts['country']);
 		$aSelectedCountries = array_map( 'strtolower', $aSelectedCountries );
 		
-		$sVisitorCountryCode = strtolower( $this->getVisitorCountryCode() );
+		$sVisitorCountryCode = strtolower( $this->GetVisitorCountryCode() );
 
 		//Print nothing if the user is in one of the countries specified and you have set show='n'
 		$sOutput;
@@ -415,7 +413,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	/**
 	 * Uses a CloudFlare $_SERVER var if available.
 	 */
-	public static function getVisitorCountryCode() {
+	public static function GetVisitorCountryCode() {
 		
 		$sCode = 'us';
 		
@@ -425,24 +423,20 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		elseif ( isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) ) {
 			return $_COOKIE[ self::CbcDataCountryCodeCookie ];
 		}
-		elseif ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
+		elseif ( Worpit_CustomContentByCountry::GetVisitorIpAddress() == '127.0.0.1' ) {
 			$sCode = 'localhost';
 		} 
 		else {
-			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
-			if ( !is_null($dbData) ) {
+			$dbData = Worpit_CustomContentByCountry::GetVisitorCountryData();
+			if ( isset($dbData->code) ) {
 				$sCode = $dbData->code;
+				self::SetCountryDataCookies($dbData);
 			}
 		}
 		
-		//set the cookie for future reference if it hasn't been set yet.
-		if ( !isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) ) {
-			setcookie( self::CbcDataCountryCodeCookie, $sCode, time()+3600, COOKIEPATH, COOKIE_DOMAIN, false );
-			$_COOKIE[ self::CbcDataCountryCodeCookie ] = $sCode;
-		}
-		
 		return $sCode;
-	}//getVisitorCountryCode
+		
+	}//GetVisitorCountryCode
 	
 	public function printVisitorCountryCode( $inaAtts = array() ) {
 
@@ -453,31 +447,28 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 		return '<span class="cbc_countrycode"'
 					.$inaAtts['style']
-					.$inaAtts['id'].'>'.$this->getVisitorCountryCode().'</span>';
+					.$inaAtts['id'].'>'.$this->GetVisitorCountryCode().'</span>';
 	}
 
-	public static function getVisitorCountryName() {
+	public static function GetVisitorCountryName() {
 		
-		if ( Worpit_CustomContentByCountry::getVisitorIpAddress() == '127.0.0.1' ) {
+		if ( Worpit_CustomContentByCountry::GetVisitorIpAddress() == '127.0.0.1' ) {
 			$sCountry = 'localhost';
 		}
 		elseif ( isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) ) {
 			return $_COOKIE[ self::CbcDataCountryNameCookie ];
 		}
 		else {
-			$dbData = Worpit_CustomContentByCountry::getVisitorCountryData();
-			$sCountry = $dbData->country;
+			$dbData = Worpit_CustomContentByCountry::GetVisitorCountryData();
+			if ( isset($dbData->country) ) {
+				$sCountry = $dbData->country;
+				self::SetCountryDataCookies($dbData);
+			}
 		}
 		
-		//set the cookie for future reference if it hasn't been set yet.
-		if ( !isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) ) {
-			setcookie( self::CbcDataCountryNameCookie, $sCountry, time()+3600, COOKIEPATH, COOKIE_DOMAIN, false );
-			$_COOKIE[ self::CbcDataCountryNameCookie ] = $sCountry;
-		}
-
 		return $sCountry;
 
-	}//getVisitorCountryName
+	}//GetVisitorCountryName
 	
 	public function printVisitorCountryName( $inaAtts = array() ) {
 
@@ -488,10 +479,10 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 		return '<span class="cbc_country"'
 					.$inaAtts['style']
-					.$inaAtts['id'].'>'.$this->getVisitorCountryName().'</span>';
+					.$inaAtts['id'].'>'.$this->GetVisitorCountryName().'</span>';
 	}
 	
-	public static function getVisitorIpAddress() {
+	public static function GetVisitorIpAddress() {
 	
 		$sIpAddress = empty($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["REMOTE_ADDR"] : $_SERVER["HTTP_X_FORWARDED_FOR"];
 
@@ -502,7 +493,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 		return $sIpAddress;
 
-	}//getVisitorIpAddress
+	}//GetVisitorIpAddress
 	
 	public function printVisitorIpAddress( $inaAtts = array() ) {
 
@@ -513,14 +504,14 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 		return '<span class="cbc_ip"'
 					.$inaAtts['style']
-					.$inaAtts['id'].'>'.$this->getVisitorIpAddress().'</span>';
+					.$inaAtts['id'].'>'.$this->GetVisitorIpAddress().'</span>';
 	}
 	
-	public static function getVisitorCountryData() {
+	public static function GetVisitorCountryData() {
 		
 		global $wpdb;
 
-		$sIpAddress = Worpit_CustomContentByCountry::getVisitorIpAddress();
+		$sIpAddress = Worpit_CustomContentByCountry::GetVisitorIpAddress();
 		
 		$sSqlQuery = "
 			SELECT `c`.`country`, `c`.`code`
@@ -536,8 +527,29 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		
 		return $sCountryData;
 
-	}//getVisitorCountryData
+	}//GetVisitorCountryData
 	
+	public static function SetCountryDataCookies( $dCountryData = null ) {
+		
+		if ( is_null($dCountryData) ) {
+			return;
+		}
+		
+		$iTimeToExpire = 24; //hours
+		
+		//set the cookie for future reference if it hasn't been set yet.
+		if ( !isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) && isset($dCountryData->country) ) {
+			setcookie( self::CbcDataCountryNameCookie, $dCountryData->country, time()+($iTimeToExpire*3600), COOKIEPATH, COOKIE_DOMAIN, false );
+			$_COOKIE[ self::CbcDataCountryNameCookie ] = $dCountryData->country;
+		}
+		
+		//set the cookie for future reference if it hasn't been set yet.
+		if ( !isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) && isset($dCountryData->code) ) {
+			setcookie( self::CbcDataCountryCodeCookie, $dCountryData->code, time()+($iTimeToExpire*3600), COOKIEPATH, COOKIE_DOMAIN, false );
+			$_COOKIE[ self::CbcDataCountryCodeCookie ] = $dCountryData->code;
+		}
+		
+	}//SetCountryDataCookies
 	
 	/** AMAZON FUNCTIONALITY **/
 	
@@ -606,7 +618,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	public function buildAffLinkFromAsinOnly( $insAsin ) {
 		
 		//Default country code to US. (amazon.com)
-		$sCountryCode = strtolower( $this->getVisitorCountryCode() );
+		$sCountryCode = strtolower( $this->GetVisitorCountryCode() );
 		
 		return $this->buildAffLinkFromCountryCode( $insAsin, $sCountryCode );
 

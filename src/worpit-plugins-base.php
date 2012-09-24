@@ -12,7 +12,7 @@ class Worpit_Plugins_Base {
 	static public $OPTION_PREFIX;
 
 	const ParentTitle		= 'Worpit';
-	const ParentName		= 'CBC :: Worpit';
+	const ParentName		= 'Custom Content';
 	const ParentPermissions	= 'manage_options';
 	const ParentMenuId		= 'worpit';
 	const VariablePrefix	= 'worpit';

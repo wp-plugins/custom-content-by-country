@@ -4,7 +4,7 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4
-Stable tag: 2.3
+Stable tag: 2.4
 
 == Description ==
 
@@ -129,7 +129,7 @@ ip2nationCountries
 
 = 2.4 =
 
-* ADDED: Now uses cookies to store country code and country name to reduce multiple SQL queries.
+* ADDED: Now uses a 24hour cookies to store country code and country name to reduce repeated SQL queries. That is, every visitor that triggers this shortcode will incur only 1 MySQL query on the site.
 
 = 2.3 =
 
@@ -169,7 +169,7 @@ and the plugin will automatically use it with the appropriate site and generate 
 
 = 2.4 =
 
-* ADDED: Now uses cookies to store country code and country name to reduce multiple SQL queries.
+* ADDED: Now uses a 24hour cookies to store country code and country name to reduce repeated SQL queries.
 
 = 2.3 =
 
