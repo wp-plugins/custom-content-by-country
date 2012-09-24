@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.4
+Version: 2.5
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -52,7 +52,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	static public $VERSION			= '2.4'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.5'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -266,12 +266,19 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			return;
 		}
 		
-		//At this stage, we've determined that the currently installed IP-2-Nation is non-existent or out of date.
-		//Is the install flag set?
+		//Is the install database request flag set and it is a SUBMIT?  INSTALL!
 		if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' ) {
-			$this->m_fIp2NationsDbInstallAttempt = true;	//used later for admin notices
-			$this->m_fIp2NationsDbInstall = $this->importMysqlFile( dirname(__FILE__).DS.'inc'.DS.'ip2nation'.DS.'ip2nation.sql' );
-			self::updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
+
+			if ( isset( $_POST['cbc_install'] ) && $_POST['cbc_install'] == "1" ) {
+				$this->m_fIp2NationsDbInstallAttempt = true;	//used later for admin notices
+				$this->m_fIp2NationsDbInstall = $this->importMysqlFile( dirname(__FILE__).DS.'inc'.DS.'ip2nation'.DS.'ip2nation.sql' );
+				self::updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
+			}
+			elseif ( isset( $_POST['cbc_dismiss'] ) ) {
+				$this->m_fIp2NationsDbInstallAttempt = false;	//used later for admin notices
+				self::updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
+			}
+			
 		}
 
 	}//installIp2NationsDb
@@ -286,15 +293,22 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			$sNotice = '
 					<form method="post" action="index.php?CBC_INSTALL_DB=install" id="cbc_install_db">
 						<p><strong>The IP-2-Nations data needs to be updated/installed before you can use the <em>Content By Country</em> plugin.</strong>
+						<input type="hidden" value="0" name="cbc_install" id="cbc_install" >
 						<input type="submit" value="Click here to install now (it may take a few seconds - click only ONCE)"
 						name="cbc_submit" id="cbc_submit" class="button-primary" onclick="changeSubmitButton()">
+						<input type="submit" value="Dismiss this notice."
+						name="cbc_dismiss" id="cbc_dismiss" class="">
 						</p>
 					</form>
 					<script type="text/javascript">
 						function changeSubmitButton() {
-							var elem = jQuery("#cbc_submit");
-							elem.val("Please wait, attempting to install data. The page will reload when it finishes ...");
-							elem.attr("disabled", "disabled");
+							var elemSubmit = jQuery("#cbc_submit");
+							elemSubmit.val("Please wait, attempting to install data. The page will reload when it finishes ...");
+							elemSubmit.attr("disabled", "disabled");
+							
+							var elemInstallFlag = jQuery("#cbc_install");
+							elemInstallFlag.val("1");
+							
 							var form = jQuery("#cbc_install_db").submit();
 						}
 					</script>
@@ -311,6 +325,10 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 				$sClass = 'error';
 				$this->getAdminNotice($sNotice, $sClass, true);
 			}
+		}
+		elseif ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' && isset( $_POST['cbc_dismiss'] )) {
+			$sNotice = '<p>The IP-2-Nations database may not have been updated, so you will need to do so manually if you have not already.</p>';
+			$this->getAdminNotice($sNotice, $sClass, true);
 		}
 		
 	}//adminNoticeIp2NationsDb

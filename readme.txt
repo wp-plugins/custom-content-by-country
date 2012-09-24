@@ -4,7 +4,7 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4
-Stable tag: 2.4
+Stable tag: 2.5
 
 == Description ==
 
@@ -128,6 +128,10 @@ ip2nationCountries
 * Add option to remove the ip2nations data from the database.
 * Add option to add custom CSS directly for the SPANs that are printed.
 
+= 2.5 =
+
+* ADDED: A dismiss button for those who have manually installed the IP 2 Nations database.
+
 = 2.4 =
 
 * ADDED: Now uses a 24hour cookies to store country code and country name to reduce repeated SQL queries. That is, every visitor that triggers this shortcode will incur only 1 MySQL query on the site.
@@ -167,6 +171,10 @@ and the plugin will automatically use it with the appropriate site and generate 
 * First Release
 
 == Upgrade Notice ==
+
+= 2.5 =
+
+* ADDED: A dismiss button for those who have manually installed the IP 2 Nations database.
 
 = 2.4 =
 
