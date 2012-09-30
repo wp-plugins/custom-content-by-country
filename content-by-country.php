@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.5
+Version: 2.6
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -52,7 +52,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	static public $VERSION			= '2.5'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.6'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -78,6 +78,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		parent::onWpInit();
 
 		$this->initShortcodes();
+		
+		self::SetCountryDataCookies();
 		
 		//Don't init Amazon data if the option is turned off.
 		if ( $this->getOption( 'enable_amazon_associate' ) === 'Y') {
@@ -448,7 +450,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			$dbData = Worpit_CustomContentByCountry::GetVisitorCountryData();
 			if ( isset($dbData->code) ) {
 				$sCode = $dbData->code;
-				self::SetCountryDataCookies($dbData);
+//				self::SetCountryDataCookies($dbData);
 			}
 		}
 		
@@ -480,7 +482,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			$dbData = Worpit_CustomContentByCountry::GetVisitorCountryData();
 			if ( isset($dbData->country) ) {
 				$sCountry = $dbData->country;
-				self::SetCountryDataCookies($dbData);
+//				self::SetCountryDataCookies($dbData);
 			}
 		}
 		
@@ -547,24 +549,24 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 	}//GetVisitorCountryData
 	
-	public static function SetCountryDataCookies( $dCountryData = null ) {
+	public static function SetCountryDataCookies( $indCountryData = null ) {
 		
-		if ( is_null($dCountryData) ) {
-			return;
+		if ( is_null($indCountryData) ) {
+			$indCountryData = self::GetVisitorCountryData();
 		}
 		
 		$iTimeToExpire = 24; //hours
 		
 		//set the cookie for future reference if it hasn't been set yet.
-		if ( !isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) && isset($dCountryData->country) ) {
-			setcookie( self::CbcDataCountryNameCookie, $dCountryData->country, time()+($iTimeToExpire*3600), COOKIEPATH, COOKIE_DOMAIN, false );
-			$_COOKIE[ self::CbcDataCountryNameCookie ] = $dCountryData->country;
+		if ( !isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) && isset($indCountryData->country) ) {
+			setcookie( self::CbcDataCountryNameCookie, $indCountryData->country, time()+($iTimeToExpire*3600), COOKIEPATH, COOKIE_DOMAIN, false );
+			$_COOKIE[ self::CbcDataCountryNameCookie ] = $indCountryData->country;
 		}
 		
 		//set the cookie for future reference if it hasn't been set yet.
-		if ( !isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) && isset($dCountryData->code) ) {
-			setcookie( self::CbcDataCountryCodeCookie, $dCountryData->code, time()+($iTimeToExpire*3600), COOKIEPATH, COOKIE_DOMAIN, false );
-			$_COOKIE[ self::CbcDataCountryCodeCookie ] = $dCountryData->code;
+		if ( !isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) && isset($indCountryData->code) ) {
+			setcookie( self::CbcDataCountryCodeCookie, $indCountryData->code, time()+($iTimeToExpire*3600), COOKIEPATH, COOKIE_DOMAIN, false );
+			$_COOKIE[ self::CbcDataCountryCodeCookie ] = $indCountryData->code;
 		}
 		
 	}//SetCountryDataCookies

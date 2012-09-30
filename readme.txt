@@ -3,8 +3,8 @@ Contributors: paultgoodchild, dlgoodchild
 Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
-Tested up to: 3.4
-Stable tag: 2.5
+Tested up to: 3.4.2
+Stable tag: 2.6
 
 == Description ==
 
@@ -128,6 +128,11 @@ ip2nationCountries
 * Add option to remove the ip2nations data from the database.
 * Add option to add custom CSS directly for the SPANs that are printed.
 
+= 2.6 =
+
+* CHANGED: Now to prevent warnings with settings cookies, the cookie setting has been moved higher up in processing before http headers have been set.
+(in response to: http://wordpress.org/support/topic/plugin-custom-content-by-country-from-worpit-warning-cannot-modify-header-information)
+
 = 2.5 =
 
 * ADDED: A dismiss button for those who have manually installed the IP 2 Nations database.
@@ -172,43 +177,7 @@ and the plugin will automatically use it with the appropriate site and generate 
 
 == Upgrade Notice ==
 
-= 2.5 =
+= 2.6 =
 
-* ADDED: A dismiss button for those who have manually installed the IP 2 Nations database.
-
-= 2.4 =
-
-* ADDED: Now uses a 24hour cookies to store country code and country name to reduce repeated SQL queries.
-
-= 2.3 =
-
-* UPDATED: The IP2Nations IP-to-Country database to latest release (August 22, 2012)
-
-= 2.2 =
-
-* FIXED: Bug with undefined function error.
-
-= 2.1 =
-
-* FIXED: Bug with incomplete internationalisation functions. Will complete for a later release.
-
-= 2.0 =
-
-* UPDATED: the IP 2 Nation database to the version released 3rd June 2012. You will be prompted to run the database upgrade after the plugin is installed.
-* ADDED: Plugin options/settings page - you must enable any of the 2 main features to use anything from the plugin. This is in order to maximum plugin
-performance so only the absolutely necessary code is used.
-* ADDED: Automatic Amazon Affiliate links using shortcode: [CBC_AMAZON] . You can also specify Amazon associate tags for each Amazon website 
-and the plugin will automatically use it with the appropriate site and generate an affiliate link for your product ASIN depending on where the visitor is from.
-* ADDED: Plugin now conforms to Worpit standard plugin structure. Faster, stable and automatically generates options pages.
-
-= 1.1 =
-
-* ADDED: Shortcode [CBC_CODE/] - which will print your country code.
-* ADDED: Special case for local testing, where if your IP Address is detected as 127.0.0.1, country and country code will be detected as 'localhost'.
-* Tidied up the code A LOT.
-* Improved the Admin Notices and DB update process, and is now using the correct WordPress action hooks.
-* Began coding for adding some nice features later.
-
-= 1.0 =
-
-* First Release
+* CHANGED: Now to prevent warnings with settings cookies, the cookie setting has been moved higher up in processing before http headers have been set.
+(in response to: http://wordpress.org/support/topic/plugin-custom-content-by-country-from-worpit-warning-cannot-modify-header-information)
