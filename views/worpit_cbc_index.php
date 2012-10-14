@@ -27,7 +27,7 @@
 					<p>Help <u>spread the word</u> or check out what else we do ...</p>
 		  		</div>
 		  		<div class="span4">
-					<a href="https://twitter.com/share" class="twitter-share-button" data-url="http://worpit.com/wordpress-twitter-bootstrap-css-plugin-home/?src=wtb_plugin" data-text="Get Twitter Bootstrap for your #WordPress website today!" data-via="Worpit" data-size="large" data-hashtags="bootstrap">Tweet</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+					<a href="https://twitter.com/share" class="twitter-share-button" data-url="wordpress.org/extend/plugins/custom-content-by-country/" data-text="Get Custom Content By Country plugin for #WordPress!" data-via="Worpit" data-size="large" data-hashtags="bootstrap">Tweet</a><script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src="//platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
 		  		</div>
 		  	</div>
 			<div class="row">

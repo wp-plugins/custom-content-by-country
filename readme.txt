@@ -4,7 +4,7 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.4.2
-Stable tag: 2.6
+Stable tag: 2.7
 
 == Description ==
 
@@ -128,6 +128,11 @@ ip2nationCountries
 * Add option to remove the ip2nations data from the database.
 * Add option to add custom CSS directly for the SPANs that are printed.
 
+= 2.7 =
+
+* Added a Developer Mode - turn this on to STOP the performance optimization whereby country code data is stored in a cookie to reduce repeat MySQL queries.
+* Ensured that there would be no PHP warning errors associated with WORPIT_DS definition
+
 = 2.6 =
 
 * CHANGED: Now to prevent warnings with settings cookies, the cookie setting has been moved higher up in processing before http headers have been set.
@@ -177,7 +182,7 @@ and the plugin will automatically use it with the appropriate site and generate 
 
 == Upgrade Notice ==
 
-= 2.6 =
+= 2.7 =
 
-* CHANGED: Now to prevent warnings with settings cookies, the cookie setting has been moved higher up in processing before http headers have been set.
-(in response to: http://wordpress.org/support/topic/plugin-custom-content-by-country-from-worpit-warning-cannot-modify-header-information)
+* Added a Developer Mode - turn this on to STOP the performance optimization whereby country code data is stored in a cookie to reduce repeat MySQL queries.
+* Ensured that there would be no PHP warning errors associated with WORPIT_DS definition

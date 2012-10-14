@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.6
+Version: 2.7
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -29,8 +29,6 @@ Author URI: http://worpit.com/
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-define( 'DS', DIRECTORY_SEPARATOR );
-
 include_once( dirname(__FILE__).'/src/worpit-plugins-base.php' );
 
 class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
@@ -52,7 +50,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	static public $VERSION			= '2.6'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.7'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -63,7 +61,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		
 		self::$PLUGIN_NAME	= basename(__FILE__);
 		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );
-		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.DS.self::$PLUGIN_PATH.DS;
+		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.WORPIT_DS.self::$PLUGIN_PATH.WORPIT_DS;
 		self::$PLUGIN_URL	= WP_PLUGIN_URL.'/'.self::$PLUGIN_PATH.'/';
 		self::$OPTION_PREFIX = self::BaseOptionPrefix . self::OptionPrefix;
 		
@@ -79,10 +77,12 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 		$this->initShortcodes();
 		
-		self::SetCountryDataCookies();
+		if ( $this->getOption( 'enable_content_by_country' ) === 'Y' && $this->getOption( 'enable_developer_mode' ) === 'N' ) {
+			self::SetCountryDataCookies();
+		}
 		
 		//Don't init Amazon data if the option is turned off.
-		if ( $this->getOption( 'enable_amazon_associate' ) === 'Y') {
+		if ( $this->getOption( 'enable_amazon_associate' ) === 'Y' ) {
 			$this->initAmazonData();
 		}
 	}
@@ -144,6 +144,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 				'section_options' => array(
 					array( 'enable_content_by_country',	'',		'N', 		'checkbox',		'Content By Country', 'Enable Content by Country Feature', "Provides the shortcodes for showing/hiding content based on visitor's location." ),
 					array( 'enable_amazon_associate',	'',		'N', 		'checkbox',		'Amazon Associates', 'Enable Amazon Associates Feature', "Provides the shortcode to use Amazon Associate links based on visitor's location." ),
+					array( 'enable_developer_mode',		'',		'N', 		'checkbox',		'Developer Mode', 'Enable Content By Country Developer Mode', "When enabled, the country code data cookie will NOT be set. Useful if developing/testing features and dynamic content." ),
 			),
 		);
 		
@@ -273,7 +274,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 			if ( isset( $_POST['cbc_install'] ) && $_POST['cbc_install'] == "1" ) {
 				$this->m_fIp2NationsDbInstallAttempt = true;	//used later for admin notices
-				$this->m_fIp2NationsDbInstall = $this->importMysqlFile( dirname(__FILE__).DS.'inc'.DS.'ip2nation'.DS.'ip2nation.sql' );
+				$this->m_fIp2NationsDbInstall = $this->importMysqlFile( dirname(__FILE__).WORPIT_DS.'inc'.WORPIT_DS.'ip2nation'.WORPIT_DS.'ip2nation.sql' );
 				self::updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
 			}
 			elseif ( isset( $_POST['cbc_dismiss'] ) ) {
@@ -450,7 +451,6 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			$dbData = Worpit_CustomContentByCountry::GetVisitorCountryData();
 			if ( isset($dbData->code) ) {
 				$sCode = $dbData->code;
-//				self::SetCountryDataCookies($dbData);
 			}
 		}
 		
@@ -482,7 +482,6 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			$dbData = Worpit_CustomContentByCountry::GetVisitorCountryData();
 			if ( isset($dbData->country) ) {
 				$sCountry = $dbData->country;
-//				self::SetCountryDataCookies($dbData);
 			}
 		}
 		

@@ -1,5 +1,9 @@
 <?php
 
+if ( !defined('WORPIT_DS') ) {
+	define( 'WORPIT_DS', DIRECTORY_SEPARATOR );
+}
+
 class Worpit_Plugins_Base {
 
 	static public $VERSION;
@@ -53,7 +57,7 @@ class Worpit_Plugins_Base {
 	}//getFullParentMenuId
 
 	protected function display( $insView, $inaData = array() ) {
-		$sFile = dirname(__FILE__).DS.'..'.DS.self::ViewDir.DS.$insView.self::ViewExt;
+		$sFile = dirname(__FILE__).WORPIT_DS.'..'.WORPIT_DS.self::ViewDir.WORPIT_DS.$insView.self::ViewExt;
 
 		if ( !is_file( $sFile ) ) {
 			echo "View not found: ".$sFile;
