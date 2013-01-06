@@ -3,8 +3,8 @@ Contributors: paultgoodchild, dlgoodchild
 Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
-Tested up to: 3.4.2
-Stable tag: 2.7
+Tested up to: 3.5
+Stable tag: 2.8
 
 == Description ==
 
@@ -127,6 +127,11 @@ ip2nationCountries
 
 * Add option to remove the ip2nations data from the database.
 * Add option to add custom CSS directly for the SPANs that are printed.
+
+= 2.8 =
+
+* FIXED: Call time by reference errors.
+* ADDED: data-detected-country field to the HTML spans that are generated so you can see the exact country code being detected each time.
 
 = 2.7 =
 

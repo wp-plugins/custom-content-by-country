@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.7
+Version: 2.8
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -50,7 +50,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	static public $VERSION			= '2.7'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.8'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -396,36 +396,37 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	 */
 	public function showContentByCountry( $inaAtts = array(), $insContent = '' ) {
 
-		$this->def( &$inaAtts, 'id' );
-		$this->def( &$inaAtts, 'style' );
+		$this->def( $inaAtts, 'id' );
+		$this->def( $inaAtts, 'style' );
 		$this->noEmptyElement( $inaAtts, 'id' );
 		$this->noEmptyElement( $inaAtts, 'style' );
 		
-		$this->def( &$inaAtts, 'country', '' );
-		$this->def( &$inaAtts, 'show', 'y' );		//defaults to displaying content
-		$this->def( &$inaAtts, 'message', '' );		//defaults to no message
+		$this->def( $inaAtts, 'country', '' );
+		$this->def( $inaAtts, 'show', 'y' );		//defaults to displaying content
+		$this->def( $inaAtts, 'message', '' );		//defaults to no message
 		
 		if( $inaAtts['country'] == '' ) {
 			return do_shortcode( $insContent );
 		}
 
-		$inaAtts['country'] = str_replace(' ', '', $inaAtts['country']);
-		$aSelectedCountries = explode(',', $inaAtts['country']);
-		$aSelectedCountries = array_map( 'strtolower', $aSelectedCountries );
+		$inaAtts['country'] = str_replace(' ', '', strtolower($inaAtts['country']) );
+		$aSelectedCountries = explode( ',', $inaAtts['country'] );
 		
-		$sVisitorCountryCode = strtolower( $this->GetVisitorCountryCode() );
+		$sVisitorCountryCode = strtolower( self::GetVisitorCountryCode() );
 
 		//Print nothing if the user is in one of the countries specified and you have set show='n'
 		$sOutput;
-		if( in_array( $sVisitorCountryCode, $aSelectedCountries ) && ( strtolower( $inaAtts['show'] ) == 'y' ) ) {
+		if ( in_array( $sVisitorCountryCode, $aSelectedCountries ) && ( strtolower( $inaAtts['show'] ) == 'y' ) ) {
 	 		$sOutput = do_shortcode($insContent);
-		} else if( !in_array( $sVisitorCountryCode, $aSelectedCountries ) && ( strtolower( $inaAtts['show'] ) == 'n' ) ) {
+		}
+		elseif ( !in_array( $sVisitorCountryCode, $aSelectedCountries ) && ( strtolower( $inaAtts['show'] ) == 'n' ) ) {
 	 		$sOutput = do_shortcode($insContent);
-		} else {
+		}
+		else {
 	 		$sOutput = do_shortcode($inaAtts['message']);
 		}
 
-		return '<span class="cbc_content"'
+		return '<span class="cbc_content" data-detected-country="'.$sVisitorCountryCode.'" '
 					.$inaAtts['style']
 					.$inaAtts['id'].'>'.$sOutput.'</span>';
 
@@ -438,6 +439,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		
 		$sCode = 'us';
 		
+		//Get the CloudFlare country if it's set
 		if ( isset($_SERVER["HTTP_CF_IPCOUNTRY"]) ) {
 			$sCode = $_SERVER["HTTP_CF_IPCOUNTRY"];
 		}
@@ -460,8 +462,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
 	public function printVisitorCountryCode( $inaAtts = array() ) {
 
-		$this->def( &$inaAtts, 'id' );
-		$this->def( &$inaAtts, 'style' );
+		$this->def( $inaAtts, 'id' );
+		$this->def( $inaAtts, 'style' );
 		$this->noEmptyElement( $inaAtts, 'id' );
 		$this->noEmptyElement( $inaAtts, 'style' );
 
@@ -491,8 +493,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
 	public function printVisitorCountryName( $inaAtts = array() ) {
 
-		$this->def( &$inaAtts, 'id' );
-		$this->def( &$inaAtts, 'style' );
+		$this->def( $inaAtts, 'id' );
+		$this->def( $inaAtts, 'style' );
 		$this->noEmptyElement( $inaAtts, 'id' );
 		$this->noEmptyElement( $inaAtts, 'style' );
 
@@ -516,8 +518,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
 	public function printVisitorIpAddress( $inaAtts = array() ) {
 
-		$this->def( &$inaAtts, 'id' );
-		$this->def( &$inaAtts, 'style' );
+		$this->def( $inaAtts, 'id' );
+		$this->def( $inaAtts, 'style' );
 		$this->noEmptyElement( $inaAtts, 'id' );
 		$this->noEmptyElement( $inaAtts, 'style' );
 
@@ -604,10 +606,10 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	 */
 	public function printAmazonLinkByCountry( $inaAtts = array(), $insContent = '' ) {
 	
-		$this->def( &$inaAtts, 'item' );
-		$this->def( &$inaAtts, 'text', $insContent );
-		$this->def( &$inaAtts, 'asin' );
-		$this->def( &$inaAtts, 'country' );
+		$this->def( $inaAtts, 'item' );
+		$this->def( $inaAtts, 'text', $insContent );
+		$this->def( $inaAtts, 'asin' );
+		$this->def( $inaAtts, 'country' );
 		
 		$sAsinToUse;
 		
