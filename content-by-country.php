@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.8
+Version: 2.9
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -33,7 +33,7 @@ include_once( dirname(__FILE__).'/src/worpit-plugins-base.php' );
 
 class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
-	const Ip2NationDbVersion = '20120822';
+	const Ip2NationDbVersion = '20130115';
 	
 	const OptionPrefix	= 'cbc_';
 	const Ip2NationDbVersionKey = 'ip2nation_version';
@@ -50,7 +50,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	static public $VERSION			= '2.8'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.9'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -395,7 +395,9 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	 * @param $insContent
 	 */
 	public function showContentByCountry( $inaAtts = array(), $insContent = '' ) {
-
+		
+		$this->def( $inaAtts, 'html', 'span' );
+		
 		$this->def( $inaAtts, 'id' );
 		$this->def( $inaAtts, 'style' );
 		$this->noEmptyElement( $inaAtts, 'id' );
@@ -426,9 +428,14 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	 		$sOutput = do_shortcode($inaAtts['message']);
 		}
 
-		return '<span class="cbc_content" data-detected-country="'.$sVisitorCountryCode.'" '
-					.$inaAtts['style']
-					.$inaAtts['id'].'>'.$sOutput.'</span>';
+		if ( strtolower( $inaAtts['html'] ) == 'none' || empty( $sOutput ) ) {
+			return $sOutput;
+		}
+		else {
+			return '<'.$inaAtts['html'].' class="cbc_content" data-detected-country="'.$sVisitorCountryCode.'" '
+						.$inaAtts['style']
+						.$inaAtts['id'].'>'.$sOutput.'</'.$inaAtts['html'].'>';
+		}
 
 	}//showContentByCountry
 	
@@ -461,15 +468,22 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorCountryCode
 	
 	public function printVisitorCountryCode( $inaAtts = array() ) {
+		
+		$this->def( $inaAtts, 'html', 'span' );
 
 		$this->def( $inaAtts, 'id' );
 		$this->def( $inaAtts, 'style' );
 		$this->noEmptyElement( $inaAtts, 'id' );
 		$this->noEmptyElement( $inaAtts, 'style' );
 
-		return '<span class="cbc_countrycode"'
-					.$inaAtts['style']
-					.$inaAtts['id'].'>'.$this->GetVisitorCountryCode().'</span>';
+		if ( strtolower( $inaAtts['html'] ) != 'none' ) {
+			return '<'.$inaAtts['html'].' class="cbc_countrycode" '
+						.$inaAtts['style']
+						.$inaAtts['id'].'>'.$this->GetVisitorCountryCode().'</'.$inaAtts['html'].'>';
+		}
+		else {
+			return $this->GetVisitorCountryCode();
+		}
 	}
 
 	public static function GetVisitorCountryName() {
@@ -492,15 +506,22 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorCountryName
 	
 	public function printVisitorCountryName( $inaAtts = array() ) {
+		
+		$this->def( $inaAtts, 'html', 'span' );
 
 		$this->def( $inaAtts, 'id' );
 		$this->def( $inaAtts, 'style' );
 		$this->noEmptyElement( $inaAtts, 'id' );
 		$this->noEmptyElement( $inaAtts, 'style' );
 
-		return '<span class="cbc_country"'
-					.$inaAtts['style']
-					.$inaAtts['id'].'>'.$this->GetVisitorCountryName().'</span>';
+		if ( strtolower( $inaAtts['html'] ) != 'none' ) {
+			return '<'.$inaAtts['html'].' class="cbc_country" '
+						.$inaAtts['style']
+						.$inaAtts['id'].'>'.$this->GetVisitorCountryName().'</'.$inaAtts['html'].'>';
+		}
+		else {
+			return $this->GetVisitorCountryName();
+		}
 	}
 	
 	public static function GetVisitorIpAddress() {
@@ -517,15 +538,22 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorIpAddress
 	
 	public function printVisitorIpAddress( $inaAtts = array() ) {
+		
+		$this->def( $inaAtts, 'html', 'span' );
 
 		$this->def( $inaAtts, 'id' );
 		$this->def( $inaAtts, 'style' );
 		$this->noEmptyElement( $inaAtts, 'id' );
 		$this->noEmptyElement( $inaAtts, 'style' );
 
-		return '<span class="cbc_ip"'
-					.$inaAtts['style']
-					.$inaAtts['id'].'>'.$this->GetVisitorIpAddress().'</span>';
+		if ( strtolower( $inaAtts['html'] ) != 'none' ) {
+			return '<'.$inaAtts['html'].' class="cbc_ip" '
+						.$inaAtts['style']
+						.$inaAtts['id'].'>'.$this->GetVisitorIpAddress().'</'.$inaAtts['html'].'>';
+		}
+		else {
+			return $this->GetVisitorIpAddress();
+		}
 	}
 	
 	public static function GetVisitorCountryData() {

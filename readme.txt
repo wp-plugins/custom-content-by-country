@@ -4,7 +4,7 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.5
-Stable tag: 2.8
+Stable tag: 2.9
 
 == Description ==
 
@@ -27,7 +27,7 @@ To learn how to use the plugin, see the [comprehensive FAQ](http://wordpress.org
 
 = What options are available in the shortcode? =
 
-Currently there are 3 options/parameters: *country*, *show*, *message*
+Currently there are 4 options/parameters: *country*, *show*, *message*, *html*
 
 country: a comma-separated list of country codes, e.g. country="us, es, uk"
 
@@ -35,6 +35,9 @@ show: is a simple yes ('y') or no ('n'). e.g. to hide content, show="n"
 
 message: is an optional piece of text you can display when the content that you're showing/hiding from a group of people isn't shown.
 Instead of displaying absolutely nothing, you can display a message. e.g message="Sorry, this content isn't available in your region."
+
+html: This is the html tag within which the content will be wrapped, e.g. DIV, SPAN, ...  If this isn't specified, SPAN is used.  If you
+don't want any HTML wrapping specify html="none"
 
 = How do I use the shortcode? =
 
@@ -128,6 +131,11 @@ ip2nationCountries
 * Add option to remove the ip2nations data from the database.
 * Add option to add custom CSS directly for the SPANs that are printed.
 
+= 2.9 =
+
+* UPDATED: IP2Nations database to version 15th January 2013
+* ADDED: Ability to not print shortcode with surrounding HTML.  Simply use parameter html="none"
+
 = 2.8 =
 
 * FIXED: Call time by reference errors.
@@ -187,7 +195,7 @@ and the plugin will automatically use it with the appropriate site and generate 
 
 == Upgrade Notice ==
 
-= 2.7 =
+= 2.9 =
 
-* Added a Developer Mode - turn this on to STOP the performance optimization whereby country code data is stored in a cookie to reduce repeat MySQL queries.
-* Ensured that there would be no PHP warning errors associated with WORPIT_DS definition
+* UPDATED: IP2Nations database to version 15th January 2013
+* ADDED: Ability to not print shortcode with surrounding HTML.  Simply use parameter html="none"
