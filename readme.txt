@@ -1,10 +1,10 @@
-=== Custom Content by Country, from Worpit ===
+=== Custom Content by Country (by Worpit) ===
 Contributors: paultgoodchild, dlgoodchild
 Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.5
-Stable tag: 2.9
+Stable tag: 2.10
 
 == Description ==
 
@@ -130,6 +130,10 @@ ip2nationCountries
 
 * Add option to remove the ip2nations data from the database.
 * Add option to add custom CSS directly for the SPANs that are printed.
+
+= 2.10 =
+
+* ADDED: A global plugin option to turn HTML printing off. You can turn it off globally, and then override for individual shortcodes using the HTML (v2.9) parameter as and when you need it.
 
 = 2.9 =
 

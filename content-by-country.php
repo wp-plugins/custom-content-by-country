@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.9
+Version: 2.10
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -50,7 +50,9 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	static public $VERSION			= '2.9'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	protected $m_fHtmlOff;
+	
+	static public $VERSION			= '2.10'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -145,6 +147,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 					array( 'enable_content_by_country',	'',		'N', 		'checkbox',		'Content By Country', 'Enable Content by Country Feature', "Provides the shortcodes for showing/hiding content based on visitor's location." ),
 					array( 'enable_amazon_associate',	'',		'N', 		'checkbox',		'Amazon Associates', 'Enable Amazon Associates Feature', "Provides the shortcode to use Amazon Associate links based on visitor's location." ),
 					array( 'enable_developer_mode',		'',		'N', 		'checkbox',		'Developer Mode', 'Enable Content By Country Developer Mode', "When enabled, the country code data cookie will NOT be set. Useful if developing/testing features and dynamic content." ),
+					array( 'enable_html_off_mode',		'',		'N', 		'checkbox',		'HTML Off', 'HTML Off mode turns off HTML printing by default', "When enabled, the HTML that is normally output is disabled.  Normally the output is surrounded by html SPAN tags, but these are then removed." ),
 			),
 		);
 		
@@ -396,13 +399,6 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	 */
 	public function showContentByCountry( $inaAtts = array(), $insContent = '' ) {
 		
-		$this->def( $inaAtts, 'html', 'span' );
-		
-		$this->def( $inaAtts, 'id' );
-		$this->def( $inaAtts, 'style' );
-		$this->noEmptyElement( $inaAtts, 'id' );
-		$this->noEmptyElement( $inaAtts, 'style' );
-		
 		$this->def( $inaAtts, 'country', '' );
 		$this->def( $inaAtts, 'show', 'y' );		//defaults to displaying content
 		$this->def( $inaAtts, 'message', '' );		//defaults to no message
@@ -417,25 +413,19 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		$sVisitorCountryCode = strtolower( self::GetVisitorCountryCode() );
 
 		//Print nothing if the user is in one of the countries specified and you have set show='n'
-		$sOutput;
+		$sOutput = '';
 		if ( in_array( $sVisitorCountryCode, $aSelectedCountries ) && ( strtolower( $inaAtts['show'] ) == 'y' ) ) {
-	 		$sOutput = do_shortcode($insContent);
+	 		$sOutput = do_shortcode( $insContent );
 		}
 		elseif ( !in_array( $sVisitorCountryCode, $aSelectedCountries ) && ( strtolower( $inaAtts['show'] ) == 'n' ) ) {
-	 		$sOutput = do_shortcode($insContent);
+	 		$sOutput = do_shortcode( $insContent );
 		}
 		else {
-	 		$sOutput = do_shortcode($inaAtts['message']);
+	 		$sOutput = do_shortcode( $inaAtts['message'] );
 		}
-
-		if ( strtolower( $inaAtts['html'] ) == 'none' || empty( $sOutput ) ) {
-			return $sOutput;
-		}
-		else {
-			return '<'.$inaAtts['html'].' class="cbc_content" data-detected-country="'.$sVisitorCountryCode.'" '
-						.$inaAtts['style']
-						.$inaAtts['id'].'>'.$sOutput.'</'.$inaAtts['html'].'>';
-		}
+		
+		$this->def( $inaAtts, 'class', 'cbc_content' );
+		return $this->printShortcodeHtml( $inaAtts, $sOutput );
 
 	}//showContentByCountry
 	
@@ -468,22 +458,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorCountryCode
 	
 	public function printVisitorCountryCode( $inaAtts = array() ) {
-		
-		$this->def( $inaAtts, 'html', 'span' );
-
-		$this->def( $inaAtts, 'id' );
-		$this->def( $inaAtts, 'style' );
-		$this->noEmptyElement( $inaAtts, 'id' );
-		$this->noEmptyElement( $inaAtts, 'style' );
-
-		if ( strtolower( $inaAtts['html'] ) != 'none' ) {
-			return '<'.$inaAtts['html'].' class="cbc_countrycode" '
-						.$inaAtts['style']
-						.$inaAtts['id'].'>'.$this->GetVisitorCountryCode().'</'.$inaAtts['html'].'>';
-		}
-		else {
-			return $this->GetVisitorCountryCode();
-		}
+		$this->def( $inaAtts, 'class', 'cbc_countrycode' );
+		return $this->printShortcodeHtml( $inaAtts, $this->GetVisitorCountryCode() );
 	}
 
 	public static function GetVisitorCountryName() {
@@ -506,22 +482,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorCountryName
 	
 	public function printVisitorCountryName( $inaAtts = array() ) {
-		
-		$this->def( $inaAtts, 'html', 'span' );
-
-		$this->def( $inaAtts, 'id' );
-		$this->def( $inaAtts, 'style' );
-		$this->noEmptyElement( $inaAtts, 'id' );
-		$this->noEmptyElement( $inaAtts, 'style' );
-
-		if ( strtolower( $inaAtts['html'] ) != 'none' ) {
-			return '<'.$inaAtts['html'].' class="cbc_country" '
-						.$inaAtts['style']
-						.$inaAtts['id'].'>'.$this->GetVisitorCountryName().'</'.$inaAtts['html'].'>';
-		}
-		else {
-			return $this->GetVisitorCountryName();
-		}
+		$this->def( $inaAtts, 'class', 'cbc_country' );
+		return $this->printShortcodeHtml( $inaAtts, $this->GetVisitorCountryName() );
 	}
 	
 	public static function GetVisitorIpAddress() {
@@ -538,22 +500,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorIpAddress
 	
 	public function printVisitorIpAddress( $inaAtts = array() ) {
-		
-		$this->def( $inaAtts, 'html', 'span' );
-
-		$this->def( $inaAtts, 'id' );
-		$this->def( $inaAtts, 'style' );
-		$this->noEmptyElement( $inaAtts, 'id' );
-		$this->noEmptyElement( $inaAtts, 'style' );
-
-		if ( strtolower( $inaAtts['html'] ) != 'none' ) {
-			return '<'.$inaAtts['html'].' class="cbc_ip" '
-						.$inaAtts['style']
-						.$inaAtts['id'].'>'.$this->GetVisitorIpAddress().'</'.$inaAtts['html'].'>';
-		}
-		else {
-			return $this->GetVisitorIpAddress();
-		}
+		$this->def( $inaAtts, 'class', 'cbc_ip' );
+		return $this->printShortcodeHtml( $inaAtts, $this->GetVisitorIpAddress() );
 	}
 	
 	public static function GetVisitorCountryData() {
@@ -770,6 +718,48 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		
 		return true;
 	}//mysql_import
+
+	private function printShortcodeHtml( &$inaAtts, $insContent ) {
+		
+		$this->def( $inaAtts, 'html', '' );
+		
+		$this->def( $inaAtts, 'id' );
+		$this->def( $inaAtts, 'style' );
+		$this->noEmptyElement( $inaAtts, 'id' );
+		$this->noEmptyElement( $inaAtts, 'style' );
+		$this->noEmptyElement( $inaAtts, 'class' );
+		
+		if ( $this->getHtmlIsOff( $inaAtts['html'] )  || empty( $insContent )  ) {
+			return $insContent;
+		}
+		else {
+			$inaAtts['html'] = empty($inaAtts['html'])? 'span' : $inaAtts['html'];
+			return '<'.$inaAtts['html']
+				.$inaAtts['style']
+				.$inaAtts['class']
+				.$inaAtts['id'].'>'.$insContent.'</'.$inaAtts['html'].'>';
+		}
+	}
+	
+	private function getHtmlIsOff( $insHtmlVar = '' ) {
+		
+		if ( !isset( $this->m_fHtmlOff ) ) {
+			$this->m_fHtmlOff = $this->getOption( 'enable_html_off_mode' ) == 'Y';
+		}
+		
+		// Basically the local html directive will always override the plugin global setting
+		if ( strlen($insHtmlVar) > 0 && strtolower( $insHtmlVar ) != 'none' ) {
+			return false;
+		}
+		
+		if ( $this->m_fHtmlOff ) {
+			return true;
+		}
+		else {
+			return false;
+		}
+		
+	}//getHtmlIsOff
 	
 }//CLASS
 
