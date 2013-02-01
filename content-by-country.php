@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country, from Worpit
 Plugin URI: http://worpit.com/
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.10
+Version: 2.11
 Author: Worpit
 Author URI: http://worpit.com/
 */
@@ -50,9 +50,10 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	protected $m_fHtmlOff;
+	protected $m_fHtmlIsOff;
+	protected $m_fW3tcCompatibilityMode;
 	
-	static public $VERSION			= '2.10'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.11'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -148,6 +149,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 					array( 'enable_amazon_associate',	'',		'N', 		'checkbox',		'Amazon Associates', 'Enable Amazon Associates Feature', "Provides the shortcode to use Amazon Associate links based on visitor's location." ),
 					array( 'enable_developer_mode',		'',		'N', 		'checkbox',		'Developer Mode', 'Enable Content By Country Developer Mode', "When enabled, the country code data cookie will NOT be set. Useful if developing/testing features and dynamic content." ),
 					array( 'enable_html_off_mode',		'',		'N', 		'checkbox',		'HTML Off', 'HTML Off mode turns off HTML printing by default', "When enabled, the HTML that is normally output is disabled.  Normally the output is surrounded by html SPAN tags, but these are then removed." ),
+					array( 'enable_w3tc_compatibility_mode',	'',	'N', 	'checkbox',		'W3TC Compatibility Mode', 'Turns off page caching for shortcodes', "When enabled, 'Custom Content by Country' plugin will turn off page caching for pages that use these shortcodes." ),
 			),
 		);
 		
@@ -378,7 +380,6 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		
 	}//adminNoticeVersionUpgrade
 	
-
 	/**
 	 * Meat and Potatoes of the CBC plugin
 	 * 
@@ -398,6 +399,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	 * @param $insContent
 	 */
 	public function showContentByCountry( $inaAtts = array(), $insContent = '' ) {
+		
+		$this->handleW3tcCompatibiltyMode();
 		
 		$this->def( $inaAtts, 'country', '' );
 		$this->def( $inaAtts, 'show', 'y' );		//defaults to displaying content
@@ -458,6 +461,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorCountryCode
 	
 	public function printVisitorCountryCode( $inaAtts = array() ) {
+		
+		$this->handleW3tcCompatibiltyMode();
 		$this->def( $inaAtts, 'class', 'cbc_countrycode' );
 		return $this->printShortcodeHtml( $inaAtts, $this->GetVisitorCountryCode() );
 	}
@@ -482,6 +487,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorCountryName
 	
 	public function printVisitorCountryName( $inaAtts = array() ) {
+		
+		$this->handleW3tcCompatibiltyMode();
 		$this->def( $inaAtts, 'class', 'cbc_country' );
 		return $this->printShortcodeHtml( $inaAtts, $this->GetVisitorCountryName() );
 	}
@@ -500,6 +507,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	}//GetVisitorIpAddress
 	
 	public function printVisitorIpAddress( $inaAtts = array() ) {
+		
+		$this->handleW3tcCompatibiltyMode();
 		$this->def( $inaAtts, 'class', 'cbc_ip' );
 		return $this->printShortcodeHtml( $inaAtts, $this->GetVisitorIpAddress() );
 	}
@@ -719,6 +728,19 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		return true;
 	}//mysql_import
 
+	private function handleW3tcCompatibiltyMode() {
+		
+		if ( !isset( $this->m_fW3tcCompatibilityMode ) ) {
+			$this->m_fW3tcCompatibilityMode = $this->getOption( 'enable_w3tc_compatibility_mode' ) == 'Y';
+		}
+		
+		if ( $this->m_fW3tcCompatibilityMode && !defined( 'DONOTCACHEPAGE' ) ) {
+			define( 'DONOTCACHEPAGE', true );
+		}
+		
+	}//handleW3tcCompatibiltyMode
+	
+	
 	private function printShortcodeHtml( &$inaAtts, $insContent ) {
 		
 		$this->def( $inaAtts, 'html', '' );
@@ -743,8 +765,8 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
 	private function getHtmlIsOff( $insHtmlVar = '' ) {
 		
-		if ( !isset( $this->m_fHtmlOff ) ) {
-			$this->m_fHtmlOff = $this->getOption( 'enable_html_off_mode' ) == 'Y';
+		if ( !isset( $this->m_fHtmlIsOff ) ) {
+			$this->m_fHtmlIsOff = $this->getOption( 'enable_html_off_mode' ) == 'Y';
 		}
 		
 		// Basically the local html directive will always override the plugin global setting
@@ -752,7 +774,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			return false;
 		}
 		
-		if ( $this->m_fHtmlOff ) {
+		if ( $this->m_fHtmlIsOff ) {
 			return true;
 		}
 		else {

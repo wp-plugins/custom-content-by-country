@@ -4,7 +4,7 @@ Donate link: http://worpit.com/
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.5
-Stable tag: 2.10
+Stable tag: 2.11
 
 == Description ==
 
@@ -104,6 +104,17 @@ There is also the option within the each shortcode itself to specify ID and STYL
 
 e.g. [CBC country="gb" show="y" id="my_cbc_id" style="color:yellow;"]Custom Content for GB[/CBC]
 
+= How does the W3 Total Cache option work exactly? =
+
+W3 Total Cache allows you to (programmatically) set caching options on a per-page basis. This means we can say for any WordPress page/post that is loaded, to allow
+caching, or not.
+
+As of version 2.11, I have added the global plugin option to turn off page caching for ONLY those pages that use this shortcode.  If you use this shortcode throughout
+your website using your theme, and you enable this option, you will effectively turn off page caching for your entire site.
+
+Remember this only affects page caching. It doesn't affect any browser caching, database or object caching etc.  If you don't know what this means, read the FAQ on
+the W3 Total Cache plugin for more info.
+
 = Do you make any other plugins? =
 
 We also created the [Manage Multiple WordPress Site Better Tool: Worpit](http://worpit.com/?src=wporg) for people with multiple WordPress sites to manage.
@@ -129,7 +140,10 @@ ip2nationCountries
 = TODO =
 
 * Add option to remove the ip2nations data from the database.
-* Add option to add custom CSS directly for the SPANs that are printed.
+
+= 2.11 =
+
+* ADDED: Feature to allow you to by-pass W3TC Total Cache PAGE CACHING for pages that use this shortcode. See FAQs.
 
 = 2.10 =
 
@@ -199,7 +213,6 @@ and the plugin will automatically use it with the appropriate site and generate 
 
 == Upgrade Notice ==
 
-= 2.9 =
+= 2.11 =
 
-* UPDATED: IP2Nations database to version 15th January 2013
-* ADDED: Ability to not print shortcode with surrounding HTML.  Simply use parameter html="none"
+* ADDED: Feature to allow you to by-pass W3TC Total Cache PAGE CACHING for pages that use this shortcode. See FAQs.
