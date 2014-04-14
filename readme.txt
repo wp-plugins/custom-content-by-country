@@ -1,14 +1,14 @@
-=== Custom Content by Country (by Worpit) ===
+=== Custom Content by Country (by iControlWP) ===
 Contributors: paultgoodchild, dlgoodchild
-Donate link: http://worpit.com/
+Donate link: http://icwp.io/q
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
-Tested up to: 3.5
-Stable tag: 2.11
+Tested up to: 3.9
+Stable tag: 2.12
 
 == Description ==
 
-Custom Content by Country WordPress plugin from [Worpit](http://worpit.com/ "Worpit: Manage Muliple WordPress Sites Better") 
+Custom Content by Country WordPress plugin from [iControlWP](http://www.icontrolwp.com/ "iControlWP: Manage Muliple WordPress Sites Better")
 offers you the option to show/hide content to users based on their location (where provided).
 
 With a simple shortcode you can specify, using a list of country codes whether to 
@@ -117,10 +117,10 @@ the W3 Total Cache plugin for more info.
 
 = Do you make any other plugins? =
 
-We also created the [Manage Multiple WordPress Site Better Tool: Worpit](http://worpit.com/?src=wporg) for people with multiple WordPress sites to manage.
+We also created the [Manage Multiple WordPress Site Better Tool: iControlWP](http://www.icontrolwp.com/?src=wporg) for people with multiple WordPress sites to manage.
 
-Yes, we created the only [Twitter Bootstrap WordPress](http://worpit.com/wordpress-twitter-bootstrap-css-plugin-home/ "Twitter Bootstrap WordPress Plugin")
-plugin with over 20,000 downloads so far.
+Yes, we created the only [Twitter Bootstrap WordPress](http://www.icontrolwp.com/our-wordpress-plugins/wordpress-twitter-bootstrap-css-plugin-home/ "Twitter Bootstrap WordPress Plugin")
+plugin with over 122,000 downloads so far.
 
 = What "country code" can I use to test locally if I'm accessing a server on our network? =
 
@@ -140,6 +140,10 @@ ip2nationCountries
 = TODO =
 
 * Add option to remove the ip2nations data from the database.
+
+= 2.12 =
+
+* UPDATED: IP2Nations database to version 22nd March 2014
 
 = 2.11 =
 
@@ -196,7 +200,7 @@ ip2nationCountries
 performance so only the absolutely necessary code is used.
 * ADDED: Automatic Amazon Affiliate links using shortcode: [CBC_AMAZON] . You can also specify Amazon associate tags for each Amazon website 
 and the plugin will automatically use it with the appropriate site and generate an affiliate link for your product ASIN depending on where the visitor is from.
-* ADDED: Plugin now conforms to Worpit standard plugin structure. Faster, stable and automatically generates options pages.
+* ADDED: Plugin now conforms to iControlWP standard plugin structure. Faster, stable and automatically generates options pages.
 
 = 1.1 =
 

@@ -1,10 +1,11 @@
 <?php
-
 if ( !defined('WORPIT_DS') ) {
 	define( 'WORPIT_DS', DIRECTORY_SEPARATOR );
 }
 
-class Worpit_Plugins_Base {
+include_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
+
+class ICWP_Plugins_Base_CBC {
 
 	static public $VERSION;
 
@@ -202,8 +203,8 @@ class Worpit_Plugins_Base {
 
 	protected function enqueuePluginAdminCss() {
 		$iRand = rand();
-		wp_register_style( 'worpit_plugin_css'.$iRand, $this->getCssUrl('worpit-plugin.css'), false, self::$VERSION );
-		wp_enqueue_style( 'worpit_plugin_css'.$iRand );
+		wp_register_style( 'icwp_plugin_css'.$iRand, $this->getCssUrl('plugin.css'), false, self::$VERSION );
+		wp_enqueue_style( 'icwp_plugin_css'.$iRand );
 	}//enqueueBootstrapAdminCss
 	
 	/**
@@ -294,7 +295,7 @@ class Worpit_Plugins_Base {
 		foreach ( $inaOptionsSection['section_options'] as &$aOptionParams ) {
 
 			list( $sOptionKey, $sOptionCurrent, $sOptionDefault ) = $aOptionParams;
-			$sCurrentOptionVal = self::getOption( $sOptionKey );
+			$sCurrentOptionVal = $this->getOption( $sOptionKey );
 			$aOptionParams[1] = ($sCurrentOptionVal == '' )? $sOptionDefault : $sCurrentOptionVal;
 		}
 	}//populatePluginOptionsSection
@@ -335,6 +336,7 @@ class Worpit_Plugins_Base {
 			return '';
 		}
 		$iCount = 0;
+		$sCollated = '';
 		foreach ( $aAllOptions as $aOptionsSection ) {
 			
 			if ( $iCount == 0 ) {
@@ -346,7 +348,7 @@ class Worpit_Plugins_Base {
 		}
 		return $sCollated;
 		
-	}//collateAllFormInputsAllOptions
+	}
 
 	/**
 	 * Returns a comma seperated list of all the options in a given options section.
@@ -359,6 +361,7 @@ class Worpit_Plugins_Base {
 			return '';
 		}
 		$iCount = 0;
+		$sCollated = '';
 		foreach ( $aOptionsSection['section_options'] as $aOption ) {
 
 			list($sKey, $fill1, $fill2, $sType) =  $aOption;
@@ -410,27 +413,54 @@ class Worpit_Plugins_Base {
 		return ( isset( $_POST[$insKey] )? $_POST[$insKey]: 'N' );
 	}
 
-	static public function getOption( $insKey, $insAddPrefix = '' ) {
-		return get_option( self::$OPTION_PREFIX.$insKey );
+	/**
+	 * @param $insKey
+	 * @param bool $mDefault
+	 * @return mixed
+	 */
+	public function getOption( $insKey, $mDefault = false ) {
+		return ICWP_WpFunctions_CBC::GetWpOption( self::GetOptionKey($insKey), $mDefault );
 	}
 
-	static public function addOption( $insKey, $insValue ) {
-		return add_option( self::$OPTION_PREFIX.$insKey, $insValue );
+	/**
+	 * @param $insKey
+	 * @param $insValue
+	 * @return mixed
+	 */
+	public function addOption( $insKey, $insValue ) {
+		return ICWP_WpFunctions_CBC::AddWpOption( self::GetOptionKey($insKey), $insValue );
 	}
 
-	static public function updateOption( $insKey, $insValue ) {
-		if ( self::getOption( $insKey ) == $insValue ) {
+	/**
+	 * @param $insKey
+	 * @param $insValue
+	 * @return bool
+	 */
+	public function updateOption( $insKey, $insValue ) {
+		if ( $this->getOption( $insKey ) == $insValue ) {
 			return true;
 		}
-		$fResult = update_option( self::$OPTION_PREFIX.$insKey, $insValue );
+		$fResult = ICWP_WpFunctions_CBC::UpdateWpOption( self::GetOptionKey($insKey), $insValue );
 		if ( !$fResult ) {
 			$this->m_fUpdateSuccessTracker = false;
-			$this->m_aFailedUpdateOptions[] = self::$OPTION_PREFIX.$insKey;
+			$this->m_aFailedUpdateOptions[] = self::GetOptionKey($insKey);
 		}
 	}
 
-	static public function deleteOption( $insKey ) {
-		return delete_option( self::$OPTION_PREFIX.$insKey );
+	/**
+	 * @param $insKey
+	 * @return mixed
+	 */
+	public function deleteOption( $insKey ) {
+		return ICWP_WpFunctions_CBC::DeleteWpOption( self::GetOptionKey($insKey) );
+	}
+
+	/**
+	 * @param string $insKey
+	 * @return string
+	 */
+	static public function GetOptionKey( $insKey ) {
+		return self::$OPTION_PREFIX.$insKey;
 	}
 
 	public function onWpActivatePlugin() { }

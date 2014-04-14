@@ -1,15 +1,15 @@
 <?php
 /*
-Plugin Name: Custom Content by Country, from Worpit
-Plugin URI: http://worpit.com/
+Plugin Name: Custom Content by Country (from iControlWP)
+Plugin URI: http://icwp.io/4p
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.11
-Author: Worpit
-Author URI: http://worpit.com/
+Version: 2.12
+Author: iControlWP
+Author URI: http://icwp.io/home
 */
 
 /**
- * Copyright (c) 2012 Worpit <support@worpit.com>
+ * Copyright (c) 2014 iControlWP <support@icontrolwp.com>
  * All rights reserved.
  *
  * "Custom Content by Country" is
@@ -31,9 +31,9 @@ Author URI: http://worpit.com/
 
 include_once( dirname(__FILE__).'/src/worpit-plugins-base.php' );
 
-class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
+class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 	
-	const Ip2NationDbVersion = '20130115';
+	const Ip2NationDbVersion = '20140322';
 	
 	const OptionPrefix	= 'cbc_';
 	const Ip2NationDbVersionKey = 'ip2nation_version';
@@ -53,7 +53,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	protected $m_fHtmlIsOff;
 	protected $m_fW3tcCompatibilityMode;
 	
-	static public $VERSION			= '2.11'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.12'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
@@ -193,7 +193,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 				return;
 		}
 	
-	}//handlePluginFormSubmit
+	}
 	
 	protected function handleSubmit_main() {
 		
@@ -234,9 +234,9 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		if ( function_exists('add_shortcode') && !empty( $this->m_aShortcodes ) ) {
 			foreach( $this->m_aShortcodes as $shortcode => $function_to_call ) {
 				add_shortcode($shortcode, array(&$this, $function_to_call) );
-			}//foreach
+			}
 		}
-	}//initShortcodes
+	}
 
 	/**
 	 * Add desired shortcodes to this array.
@@ -267,7 +267,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			return;
 		}
 
-		$sDbVersion = self::getOption( self::Ip2NationDbVersionKey );
+		$sDbVersion = $this->getOption( self::Ip2NationDbVersionKey );
 
 		//jump out if the DB version is already up-to-date.
 		if ( $sDbVersion === self::Ip2NationDbVersion ) {
@@ -280,11 +280,11 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 			if ( isset( $_POST['cbc_install'] ) && $_POST['cbc_install'] == "1" ) {
 				$this->m_fIp2NationsDbInstallAttempt = true;	//used later for admin notices
 				$this->m_fIp2NationsDbInstall = $this->importMysqlFile( dirname(__FILE__).WORPIT_DS.'inc'.WORPIT_DS.'ip2nation'.WORPIT_DS.'ip2nation.sql' );
-				self::updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
+				$this->updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
 			}
 			elseif ( isset( $_POST['cbc_dismiss'] ) ) {
 				$this->m_fIp2NationsDbInstallAttempt = false;	//used later for admin notices
-				self::updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
+				$this->updateOption( self::Ip2NationDbVersionKey, self::Ip2NationDbVersion );
 			}
 			
 		}
@@ -293,7 +293,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 	
 	private function adminNoticeIp2NationsDb() {
 		
-		$sDbVersion = self::getOption( self::Ip2NationDbVersionKey );
+		$sDbVersion = $this->getOption( self::Ip2NationDbVersionKey );
 		$sClass = 'updated';
 	
 		if ( !isset( $_GET['CBC_INSTALL_DB'] ) && $sDbVersion !== self::Ip2NationDbVersion ) {
@@ -446,11 +446,11 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		elseif ( isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) ) {
 			return $_COOKIE[ self::CbcDataCountryCodeCookie ];
 		}
-		elseif ( Worpit_CustomContentByCountry::GetVisitorIpAddress() == '127.0.0.1' ) {
+		elseif ( self::GetVisitorIpAddress() == '127.0.0.1' ) {
 			$sCode = 'localhost';
 		} 
 		else {
-			$dbData = Worpit_CustomContentByCountry::GetVisitorCountryData();
+			$dbData = self::GetVisitorCountryData();
 			if ( isset($dbData->code) ) {
 				$sCode = $dbData->code;
 			}
@@ -469,14 +469,14 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 
 	public static function GetVisitorCountryName() {
 		
-		if ( Worpit_CustomContentByCountry::GetVisitorIpAddress() == '127.0.0.1' ) {
+		if ( self::GetVisitorIpAddress() == '127.0.0.1' ) {
 			$sCountry = 'localhost';
 		}
 		elseif ( isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) ) {
 			return $_COOKIE[ self::CbcDataCountryNameCookie ];
 		}
 		else {
-			$dbData = Worpit_CustomContentByCountry::GetVisitorCountryData();
+			$dbData = self::GetVisitorCountryData();
 			if ( isset($dbData->country) ) {
 				$sCountry = $dbData->country;
 			}
@@ -517,7 +517,7 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		
 		global $wpdb;
 
-		$sIpAddress = Worpit_CustomContentByCountry::GetVisitorIpAddress();
+		$sIpAddress = self::GetVisitorIpAddress();
 		
 		$sSqlQuery = "
 			SELECT `c`.`country`, `c`.`code`
@@ -595,8 +595,6 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 		$this->def( $inaAtts, 'text', $insContent );
 		$this->def( $inaAtts, 'asin' );
 		$this->def( $inaAtts, 'country' );
-		
-		$sAsinToUse;
 		
 		if ($inaAtts['asin'] != '') {
 			$sAsinToUse = $inaAtts['asin'];
@@ -786,4 +784,4 @@ class Worpit_CustomContentByCountry extends Worpit_Plugins_Base {
 }//CLASS
 
 
-new Worpit_CustomContentByCountry( );
+new ICWP_CustomContentByCountry( );

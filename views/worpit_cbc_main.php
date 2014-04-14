@@ -4,10 +4,9 @@ include_once( dirname(__FILE__).WORPIT_DS.'widgets'.WORPIT_DS.'worpit_widgets.ph
 ?>
 <div class="wrap">
 	<div class="bootstrap-wpadmin">
-		<div class="page-header">
-			<a href="http://worpit.com/"><div class="icon32" id="worpit-icon">&nbsp;</div></a>
-			<h2>Content By Country Main Plugin Options</h2>
-		</div>
+
+		<?php echo printOptionsPageHeader( 'Main Options' ); ?>
+
 		<div class="row">
 			<div class="span9">
 				<form method="post" action="<?php echo $worpit_form_action; ?>" class="form-horizontal">
