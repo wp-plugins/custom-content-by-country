@@ -3,7 +3,7 @@
 Plugin Name: Custom Content by Country (from iControlWP)
 Plugin URI: http://icwp.io/4p
 Description: Tool for displaying/hiding custom content based on visitors country/location.
-Version: 2.12
+Version: 2.13
 Author: iControlWP
 Author URI: http://icwp.io/home
 */
@@ -30,16 +30,17 @@ Author URI: http://icwp.io/home
  */
 
 include_once( dirname(__FILE__).'/src/worpit-plugins-base.php' );
+include_once( dirname(__FILE__).'/src/icwp-data-processor.php' );
 
 class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 	
-	const Ip2NationDbVersion = '20140322';
+	const Ip2NationDbVersion = '20140622';
 	
 	const OptionPrefix	= 'cbc_';
 	const Ip2NationDbVersionKey = 'ip2nation_version';
 	const CbcDataCountryNameCookie = 'cbc_country_name';
 	const CbcDataCountryCodeCookie = 'cbc_country_code';
-	
+
 	protected $m_aAmazonSitesData;
 	protected $m_aAmazonCountryCodeToSiteMap;
 	
@@ -50,16 +51,15 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 	protected $m_fIp2NationsDbInstallAttempt;
 	protected $m_fSubmitCbcMainAttempt;
 	
-	protected $m_fHtmlIsOff;
 	protected $m_fW3tcCompatibilityMode;
 	
-	static public $VERSION			= '2.12'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
+	static public $VERSION			= '2.13'; //SHOULD BE UPDATED UPON EACH NEW RELEASE
 	
 	public function __construct(){
 		parent::__construct();
 
-		register_activation_hook( __FILE__, array( &$this, 'onWpActivatePlugin' ) );
-		register_deactivation_hook( __FILE__, array( &$this, 'onWpDeactivatePlugin' ) );
+		register_activation_hook( __FILE__, array( $this, 'onWpActivatePlugin' ) );
+		register_deactivation_hook( __FILE__, array( $this, 'onWpDeactivatePlugin' ) );
 	//	register_uninstall_hook( __FILE__, array( &$this, 'onWpUninstallPlugin' ) );
 		
 		self::$PLUGIN_NAME	= basename(__FILE__);
@@ -233,7 +233,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		
 		if ( function_exists('add_shortcode') && !empty( $this->m_aShortcodes ) ) {
 			foreach( $this->m_aShortcodes as $shortcode => $function_to_call ) {
-				add_shortcode($shortcode, array(&$this, $function_to_call) );
+				add_shortcode($shortcode, array( $this, $function_to_call ) );
 			}
 		}
 	}
@@ -258,7 +258,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		if ( $this->getOption( 'enable_amazon_associate' ) === 'Y' ) {
 			$this->m_aShortcodes['CBC_AMAZON']	=	'printAmazonLinkByCountry';
 		}
-	}//defineShortcodes
+	}
 	
 	private function installIp2NationsDb() {
 		
@@ -289,14 +289,14 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 			
 		}
 
-	}//installIp2NationsDb
+	}
 	
 	private function adminNoticeIp2NationsDb() {
 		
 		$sDbVersion = $this->getOption( self::Ip2NationDbVersionKey );
 		$sClass = 'updated';
 	
-		if ( !isset( $_GET['CBC_INSTALL_DB'] ) && $sDbVersion !== self::Ip2NationDbVersion ) {
+		if ( isset( $_GET['show_cbcdb_install'] ) || ( !isset( $_GET['CBC_INSTALL_DB'] ) && $sDbVersion !== self::Ip2NationDbVersion ) ) {
 			//At this stage, we've determined that the currently installed IP-2-Nation is non-existent or out of date.
 			$sNotice = '
 					<form method="post" action="index.php?CBC_INSTALL_DB=install" id="cbc_install_db">
@@ -323,23 +323,25 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 			';
 			$this->getAdminNotice($sNotice, $sClass, true);
 
-		} else if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' && $this->m_fIp2NationsDbInstallAttempt ) {
+		}
+		else if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' && $this->m_fIp2NationsDbInstallAttempt ) {
 			
 			if ( $this->m_fIp2NationsDbInstall ) {
 				$sNotice = '<p><strong>Success</strong>: The IP-2-Nations data was automatically installed successfully for the "Content By Country" plugin.</p>';
 				$this->getAdminNotice($sNotice, $sClass, true);
-			} else {
+			}
+			else {
 				$sNotice = '<p>The IP-2-Nations data was <strong>NOT</strong> successfully installed. For perfomance reasons, only 1 attempt is ever made - you will have to do so manually.</p>';
 				$sClass = 'error';
 				$this->getAdminNotice($sNotice, $sClass, true);
 			}
 		}
-		elseif ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' && isset( $_POST['cbc_dismiss'] )) {
+		else if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' && isset( $_POST['cbc_dismiss'] )) {
 			$sNotice = '<p>The IP-2-Nations database may not have been updated, so you will need to do so manually if you have not already.</p>';
 			$this->getAdminNotice($sNotice, $sClass, true);
 		}
 		
-	}//adminNoticeIp2NationsDb
+	}
 	
 	private function adminNoticeOptionsUpdated() {
 		
@@ -355,7 +357,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 			}
 			$this->getAdminNotice($sNotice, $sClass, true);
 		}
-	}//adminNoticeOptionsUpdated
+	}
 	
 	private function adminNoticeVersionUpgrade() {
 
@@ -378,7 +380,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 			$this->getAdminNotice( $sNotice, 'updated', true );
 		}
 		
-	}//adminNoticeVersionUpgrade
+	}
 	
 	/**
 	 * Meat and Potatoes of the CBC plugin
@@ -446,7 +448,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		elseif ( isset( $_COOKIE[ self::CbcDataCountryCodeCookie ] ) ) {
 			return $_COOKIE[ self::CbcDataCountryCodeCookie ];
 		}
-		elseif ( self::GetVisitorIpAddress() == '127.0.0.1' ) {
+		elseif ( self::GetVisitorIpAddress( false ) == '127.0.0.1' ) {
 			$sCode = 'localhost';
 		} 
 		else {
@@ -458,7 +460,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		
 		return $sCode;
 		
-	}//GetVisitorCountryCode
+	}
 	
 	public function printVisitorCountryCode( $inaAtts = array() ) {
 		
@@ -469,7 +471,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 
 	public static function GetVisitorCountryName() {
 		
-		if ( self::GetVisitorIpAddress() == '127.0.0.1' ) {
+		if ( self::GetVisitorIpAddress( false ) == '127.0.0.1' ) {
 			$sCountry = 'localhost';
 		}
 		elseif ( isset( $_COOKIE[ self::CbcDataCountryNameCookie ] ) ) {
@@ -492,35 +494,35 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		$this->def( $inaAtts, 'class', 'cbc_country' );
 		return $this->printShortcodeHtml( $inaAtts, $this->GetVisitorCountryName() );
 	}
-	
-	public static function GetVisitorIpAddress() {
-	
-		$sIpAddress = empty($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["REMOTE_ADDR"] : $_SERVER["HTTP_X_FORWARDED_FOR"];
 
-		if( strpos($sIpAddress, ',') !== false ) {
-			$sIpAddress = explode(',', $sIpAddress);
-			$sIpAddress = $sIpAddress[0];
-		}
+	/**
+	 * Cloudflare compatible.
+	 *
+	 * @param boolean $fAsLong
+	 * @return bool|integer - visitor IP Address as IP2Long
+	 */
+	public static function GetVisitorIpAddress( $fAsLong = true ) {
+		return ICWP_CCBC_DataProcessor::GetVisitorIpAddress( $fAsLong );
+	}
 
-		return $sIpAddress;
-
-	}//GetVisitorIpAddress
-	
-	public function printVisitorIpAddress( $inaAtts = array() ) {
-		
+	/**
+	 * @param array $aAtts
+	 * @return string
+	 */
+	public function printVisitorIpAddress( $aAtts = array() ) {
 		$this->handleW3tcCompatibiltyMode();
-		$this->def( $inaAtts, 'class', 'cbc_ip' );
-		return $this->printShortcodeHtml( $inaAtts, $this->GetVisitorIpAddress() );
+		$this->def( $aAtts, 'class', 'cbc_ip' );
+		return $this->printShortcodeHtml( $aAtts, $this->GetVisitorIpAddress( false ) );
 	}
 	
 	public static function GetVisitorCountryData() {
 		
 		global $wpdb;
 
-		$sIpAddress = self::GetVisitorIpAddress();
+		$sIpAddress = self::GetVisitorIpAddress( false );
 		
 		$sSqlQuery = "
-			SELECT `c`.`country`, `c`.`code`
+			SELECT `c`.`country`, `c`.`code`, `c`.`iso_code_2`
 			FROM `ip2nationCountries` AS `c`
 			INNER JOIN ip2nation AS `i`
 				ON `c`.`code` = `i`.`country`
@@ -533,7 +535,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		
 		return $sCountryData;
 
-	}//GetVisitorCountryData
+	}
 	
 	public static function SetCountryDataCookies( $indCountryData = null ) {
 		
@@ -724,7 +726,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		}
 		
 		return true;
-	}//mysql_import
+	}
 
 	private function handleW3tcCompatibiltyMode() {
 		
@@ -736,52 +738,52 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 			define( 'DONOTCACHEPAGE', true );
 		}
 		
-	}//handleW3tcCompatibiltyMode
-	
-	
-	private function printShortcodeHtml( &$inaAtts, $insContent ) {
+	}
+
+	/**
+	 * @param $aAtts
+	 * @param $insContent
+	 * @return string
+	 */
+	private function printShortcodeHtml( &$aAtts, $insContent ) {
 		
-		$this->def( $inaAtts, 'html', '' );
+		$this->def( $aAtts, 'html', '' );
 		
-		$this->def( $inaAtts, 'id' );
-		$this->def( $inaAtts, 'style' );
-		$this->noEmptyElement( $inaAtts, 'id' );
-		$this->noEmptyElement( $inaAtts, 'style' );
-		$this->noEmptyElement( $inaAtts, 'class' );
+		$this->def( $aAtts, 'id' );
+		$this->def( $aAtts, 'style' );
+		$this->noEmptyElement( $aAtts, 'id' );
+		$this->noEmptyElement( $aAtts, 'style' );
+		$this->noEmptyElement( $aAtts, 'class' );
 		
-		if ( $this->getHtmlIsOff( $inaAtts['html'] )  || empty( $insContent )  ) {
-			return $insContent;
+		if ( $this->getHtmlIsOff( $aAtts['html'] ) || empty( $insContent )  ) {
+			$sReturnContent = $insContent;
 		}
 		else {
-			$inaAtts['html'] = empty($inaAtts['html'])? 'span' : $inaAtts['html'];
-			return '<'.$inaAtts['html']
-				.$inaAtts['style']
-				.$inaAtts['class']
-				.$inaAtts['id'].'>'.$insContent.'</'.$inaAtts['html'].'>';
+			$aAtts['html'] = empty($aAtts['html'])? 'span' : $aAtts['html'];
+			$sReturnContent = '<'.$aAtts['html']
+				.$aAtts['style']
+				.$aAtts['class']
+				.$aAtts['id'].'>'.$insContent.'</'.$aAtts['html'].'>';
 		}
+
+		return trim( $sReturnContent );
 	}
-	
-	private function getHtmlIsOff( $insHtmlVar = '' ) {
-		
-		if ( !isset( $this->m_fHtmlIsOff ) ) {
-			$this->m_fHtmlIsOff = $this->getOption( 'enable_html_off_mode' ) == 'Y';
-		}
+
+	/**
+	 * @param string $sHtmlVar
+	 * @return bool
+	 */
+	private function getHtmlIsOff( $sHtmlVar = '' ) {
 		
 		// Basically the local html directive will always override the plugin global setting
-		if ( strlen($insHtmlVar) > 0 && strtolower( $insHtmlVar ) != 'none' ) {
-			return false;
+		if ( !empty( $sHtmlVar ) ) {
+			return ( strtolower( $sHtmlVar ) == 'none' );
 		}
-		
-		if ( $this->m_fHtmlIsOff ) {
-			return true;
-		}
-		else {
-			return false;
-		}
-		
-	}//getHtmlIsOff
+
+		return ( $this->getOption( 'enable_html_off_mode' ) == 'Y' );
+	}
 	
-}//CLASS
+}
 
 
-new ICWP_CustomContentByCountry( );
+$oICWP_CBC = new ICWP_CustomContentByCountry();

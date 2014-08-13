@@ -4,7 +4,7 @@ Donate link: http://icwp.io/q
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.12
+Stable tag: 2.13
 
 == Description ==
 
@@ -140,6 +140,13 @@ ip2nationCountries
 = TODO =
 
 * Add option to remove the ip2nations data from the database.
+
+= 2.13 =
+
+* UPDATED: IP2Nations database to version 22nd June 2014
+* FIX: IP Address detection in cases where it's populating with Port number.
+* FIX: shortcode usage of ' html="none" '
+* ADDED: option to manually force the display of the database install option.
 
 = 2.12 =
 

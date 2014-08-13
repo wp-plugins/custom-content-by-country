@@ -35,13 +35,13 @@ class ICWP_Plugins_Base_CBC {
 
 	public function __construct() {
 		
-		add_action( 'plugins_loaded', array( &$this, 'onWpPluginsLoaded' ) );
-		add_action( 'init', array( &$this, 'onWpInit' ), 1 );
+		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ) );
+		add_action( 'init', array( $this, 'onWpInit' ), 1 );
 		if ( is_admin() ) {
-			add_action( 'admin_init', array( &$this, 'onWpAdminInit' ) );
-			add_action( 'admin_notices', array( &$this, 'onWpAdminNotices' ) );
-			add_action( 'admin_menu', array( &$this, 'onWpAdminMenu' ) );
-			add_action( 'plugin_action_links', array( &$this, 'onWpPluginActionLinks' ), 10, 4 );
+			add_action( 'admin_init', array( $this, 'onWpAdminInit' ) );
+			add_action( 'admin_notices', array( $this, 'onWpAdminNotices' ) );
+			add_action( 'admin_menu', array( $this, 'onWpAdminMenu' ) );
+			add_action( 'plugin_action_links', array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 		}
 		/**
 		 * We make the assumption that all settings updates are successful until told otherwise
@@ -133,7 +133,7 @@ class ICWP_Plugins_Base_CBC {
 		if ( !empty($this->m_aPluginMenu) ) {
 			foreach ( $this->m_aPluginMenu as $sMenuTitle => $aMenu ) {
 				list( $sMenuItemText, $sMenuItemId, $sMenuCallBack ) = $aMenu;
-				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, self::ParentPermissions, $sMenuItemId, array( &$this, $sMenuCallBack ) );
+				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, self::ParentPermissions, $sMenuItemId, array( $this, $sMenuCallBack ) );
 			}
 		}
 
