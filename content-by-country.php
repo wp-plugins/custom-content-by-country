@@ -61,7 +61,7 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 
 		self::$PLUGIN_NAME	= basename(__FILE__);
 		self::$PLUGIN_PATH	= plugin_basename( dirname(__FILE__) );
-		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.ICWP_DS.self::$PLUGIN_PATH.WORPIT_DS;
+		self::$PLUGIN_DIR	= WP_PLUGIN_DIR.ICWP_DS.self::$PLUGIN_PATH.ICWP_DS;
 		self::$PLUGIN_URL	= WP_PLUGIN_URL.'/'.self::$PLUGIN_PATH.'/';
 		self::$OPTION_PREFIX = self::BaseOptionPrefix . self::OptionPrefix;
 		
