@@ -17,11 +17,19 @@
  *
  */
 
-if ( !class_exists('ICWP_CCBC_DataProcessor_V2') ):
+if ( !class_exists('ICWP_CCBC_DataProcessor_V3') ):
 
-	class ICWP_CCBC_DataProcessor_V2 {
+	class ICWP_CCBC_DataProcessor_V3 {
 
-		public static $fUseFilter = false;
+		/**
+		 * @var ICWP_CCBC_DataProcessor_V3
+		 */
+		protected static $oInstance = NULL;
+
+		/**
+		 * @var bool
+		 */
+		public static $fUseFilterInput = false;
 
 		/**
 		 * @var string
@@ -146,8 +154,6 @@ if ( !class_exists('ICWP_CCBC_DataProcessor_V2') ):
 				return $aRawAddresses;
 			}
 			$aRawList = array_map( 'trim', explode( "\n", $sAddresses ) );
-
-			self::$fUseFilter = function_exists('filter_var') && defined( FILTER_VALIDATE_IP );
 
 			foreach( $aRawList as $sKey => $sRawAddressLine ) {
 
@@ -276,9 +282,13 @@ if ( !class_exists('ICWP_CCBC_DataProcessor_V2') ):
 			return $inaCurrent;
 		}
 
-		public static function Verify_Ip( $insIpAddress ) {
+		/**
+		 * @param string $sIpAddress
+		 * @return bool|int|string
+		 */
+		public static function Verify_Ip( $sIpAddress ) {
 
-			$sAddress = self::Clean_Ip( $insIpAddress );
+			$sAddress = self::Clean_Ip( $sIpAddress );
 
 			// Now, determine if this is an IP range, or just a plain IP address.
 			if ( strpos( $sAddress, '-' ) === false ) { //plain IP address
@@ -289,6 +299,10 @@ if ( !class_exists('ICWP_CCBC_DataProcessor_V2') ):
 			}
 		}
 
+		/**
+		 * @param string $insRawAddress
+		 * @return mixed
+		 */
 		public static function Clean_Ip( $insRawAddress ) {
 			$insRawAddress = preg_replace( '/[a-z\s]/i', '', $insRawAddress );
 			$insRawAddress = str_replace( '.', 'PERIOD', $insRawAddress );
@@ -428,18 +442,38 @@ if ( !class_exists('ICWP_CCBC_DataProcessor_V2') ):
 		}
 
 		/**
-		 * @param string $sKey
+		 * @return bool
+		 */
+		static public function GetUseFilterInput() {
+			return self::$fUseFilterInput && function_exists( 'filter_input' );
+		}
+
+		/**
+		 * @param array $aArray
+		 * @param string $sKey		The array key to fetch
 		 * @param mixed $mDefault
 		 * @return mixed|null
 		 */
-		public static function FetchEnv( $sKey, $mDefault = null ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_ENV' ) ) {
-				$sPossible = filter_input( INPUT_ENV, $sKey );
-				if ( !empty( $sPossible ) ) {
-					return $sPossible;
+		public static function ArrayFetch( &$aArray, $sKey, $mDefault = null ) {
+			if ( empty( $aArray ) || !isset( $aArray[$sKey] ) ) {
+				return $mDefault;
+			}
+			return $aArray[$sKey];
+		}
+
+		/**
+		 * @param string $sKey		The $_COOKIE key
+		 * @param mixed $mDefault
+		 * @return mixed|null
+		 */
+		public static function FetchCookie( $sKey, $mDefault = null ) {
+			if ( self::GetUseFilterInput() && defined( 'INPUT_COOKIE' ) ) {
+				$mPossible = filter_input( INPUT_COOKIE, $sKey );
+				if ( !empty( $mPossible ) ) {
+					return $mPossible;
 				}
 			}
-			return self::ArrayFetch( $_ENV, $sKey, $mDefault );
+			return self::ArrayFetch( $_COOKIE, $sKey, $mDefault );
 		}
 
 		/**
@@ -447,16 +481,43 @@ if ( !class_exists('ICWP_CCBC_DataProcessor_V2') ):
 		 * @param mixed $mDefault
 		 * @return mixed|null
 		 */
-		public static function FetchServer( $sKey, $mDefault = null ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_SERVER' ) ) {
-				$sPossible = filter_input( INPUT_SERVER, $sKey );
+		public static function FetchEnv( $sKey, $mDefault = null ) {
+			if ( self::GetUseFilterInput() && defined( 'INPUT_ENV' ) ) {
+				$sPossible = filter_input( INPUT_ENV, $sKey );
 				if ( !empty( $sPossible ) ) {
 					return $sPossible;
 				}
 			}
-			return self::ArrayFetch( $_SERVER, $sKey, $mDefault );
+			return self::ArrayFetch( $_ENV, $sKey, $mDefault );
 		}
-
+		/**
+		 * @param string $sKey
+		 * @param mixed $mDefault
+		 * @return mixed|null
+		 */
+		public static function FetchGet( $sKey, $mDefault = null ) {
+			if ( self::GetUseFilterInput() && defined( 'INPUT_GET' ) ) {
+				$mPossible = filter_input( INPUT_GET, $sKey );
+				if ( !empty( $mPossible ) ) {
+					return $mPossible;
+				}
+			}
+			return self::ArrayFetch( $_GET, $sKey, $mDefault );
+		}
+		/**
+		 * @param string $sKey		The $_POST key
+		 * @param mixed $mDefault
+		 * @return mixed|null
+		 */
+		public static function FetchPost( $sKey, $mDefault = null ) {
+			if ( self::GetUseFilterInput() && defined( 'INPUT_POST' ) ) {
+				$mPossible = filter_input( INPUT_POST, $sKey );
+				if ( !empty( $mPossible ) ) {
+					return $mPossible;
+				}
+			}
+			return self::ArrayFetch( $_POST, $sKey, $mDefault );
+		}
 		/**
 		 * @param string $sKey
 		 * @param boolean $infIncludeCookie
@@ -473,58 +534,35 @@ if ( !class_exists('ICWP_CCBC_DataProcessor_V2') ):
 			}
 			return is_null( $mFetchVal )? $mDefault : $mFetchVal;
 		}
+
 		/**
 		 * @param string $sKey
 		 * @param mixed $mDefault
 		 * @return mixed|null
 		 */
-		public static function FetchGet( $sKey, $mDefault = null ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_GET' ) ) {
-				return filter_input( INPUT_GET, $sKey );
+		public static function FetchServer( $sKey, $mDefault = null ) {
+			if ( self::GetUseFilterInput() && defined( 'INPUT_SERVER' ) ) {
+				$sPossible = filter_input( INPUT_SERVER, $sKey );
+				if ( !empty( $sPossible ) ) {
+					return $sPossible;
+				}
 			}
-			return self::ArrayFetch( $_GET, $sKey, $mDefault );
-		}
-		/**
-		 * @param string $sKey		The $_POST key
-		 * @param mixed $mDefault
-		 * @return mixed|null
-		 */
-		public static function FetchPost( $sKey, $mDefault = null ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_POST' ) ) {
-				return filter_input( INPUT_POST, $sKey );
-			}
-			return self::ArrayFetch( $_POST, $sKey, $mDefault );
-		}
-		/**
-		 * @param string $sKey		The $_COOKIE key
-		 * @param mixed $mDefault
-		 * @return mixed|null
-		 */
-		public static function FetchCookie( $sKey, $mDefault = null ) {
-			if ( function_exists( 'filter_input' ) && defined( 'INPUT_COOKIE' ) ) {
-				return filter_input( INPUT_COOKIE, $sKey );
-			}
-			return self::ArrayFetch( $_COOKIE, $sKey, $mDefault );
-		}
-
-		/**
-		 * @param array $aArray
-		 * @param string $sKey		The array key to fetch
-		 * @param mixed $mDefault
-		 * @return mixed|null
-		 */
-		public static function ArrayFetch( &$aArray, $sKey, $mDefault = null ) {
-			if ( empty( $aArray ) ) {
-				return $mDefault;
-			}
-			if ( !isset( $aArray[$sKey] ) ) {
-				return $mDefault;
-			}
-			return $aArray[$sKey];
+			return self::ArrayFetch( $_SERVER, $sKey, $mDefault );
 		}
 	}
 endif;
 
 if ( !class_exists('ICWP_CCBC_DataProcessor') ):
-	class ICWP_CCBC_DataProcessor extends ICWP_CCBC_DataProcessor_V2 { }
+
+	class ICWP_CCBC_DataProcessor extends ICWP_CCBC_DataProcessor_V3 {
+		/**
+		 * @return ICWP_CCBC_DataProcessor
+		 */
+		public static function GetInstance() {
+			if ( is_null( self::$oInstance ) ) {
+				self::$oInstance = new self();
+			}
+			return self::$oInstance;
+		}
+	}
 endif;

@@ -1,6 +1,6 @@
 <?php
-if ( !defined('WORPIT_DS') ) {
-	define( 'WORPIT_DS', DIRECTORY_SEPARATOR );
+if ( !defined('ICWP_DS') ) {
+	define( 'ICWP_DS', DIRECTORY_SEPARATOR );
 }
 
 include_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
@@ -58,7 +58,7 @@ class ICWP_Plugins_Base_CBC {
 	}//getFullParentMenuId
 
 	protected function display( $insView, $inaData = array() ) {
-		$sFile = dirname(__FILE__).WORPIT_DS.'..'.WORPIT_DS.self::ViewDir.WORPIT_DS.$insView.self::ViewExt;
+		$sFile = dirname(__FILE__).ICWP_DS.'..'.ICWP_DS.self::ViewDir.ICWP_DS.$insView.self::ViewExt;
 
 		if ( !is_file( $sFile ) ) {
 			echo "View not found: ".$sFile;

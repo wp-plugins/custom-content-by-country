@@ -141,6 +141,13 @@ ip2nationCountries
 
 * Add option to remove the ip2nations data from the database.
 
+= 2.14 =
+
+* UPDATED:  IP2Nations database to latest version from 16th August 2014
+* UPDATED:  Major code refactor for better maintenance going forward.
+* FIXED:    Developer mode (using cookies to optimize performance) setting was ignored in some cases.
+* CHANGED:  Developer mode is enabled by default.
+
 = 2.13 =
 
 * UPDATED: IP2Nations database to version 22nd June 2014
