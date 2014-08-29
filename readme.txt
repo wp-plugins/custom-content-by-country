@@ -4,7 +4,7 @@ Donate link: http://icwp.io/q
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.15.20140816-1
+Stable tag: 2.15.20140816-2
 
 == Description ==
 
@@ -141,7 +141,7 @@ ip2nationCountries
 
 * Add option to remove the ip2nations data from the database.
 
-= 2.15.20140816-1 =
+= 2.15.20140816-2 =
 
 * FIXED:    Manual tweak to the ip2nations database to correctly reflect the ISO country code for Sweden [ref](http://wordpress.org/support/topic/what-are-the-country-codes)
 * CHANGED:  Plugin version now highlights the date of the ip2nations database (YYYYMMDD)

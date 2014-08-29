@@ -70,7 +70,9 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 
 	public function onWpAdminInit() {
 		parent::onWpAdminInit();
-		$this->installIp2NationsDb();
+		if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' ) {
+			$this->installIp2NationsDb();
+		}
 	}
 	
 	protected function createPluginSubMenuItems(){
@@ -200,19 +202,11 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 			return;
 		}
 
-		$sDbVersion = $this->getOption( $this->oPluginVo->getIp2NationsDbVersionKey() );
-
-		//jump out if the DB version is already up-to-date.
-		if ( $sDbVersion === $this->oPluginVo->getIp2NationsDbVersion() ) {
-			return;
-		}
-		
 		//Is the install database request flag set and it is a SUBMIT?  INSTALL!
 		if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' ) {
-
 			if ( isset( $_POST['cbc_install'] ) && $_POST['cbc_install'] == "1" ) {
 				$this->m_fIp2NationsDbInstallAttempt = true;	//used later for admin notices
-				$this->m_fIp2NationsDbInstall = $this->importMysqlFile( dirname(__FILE__).ICWP_DS.'inc'.ICWP_DS.'ip2nation'.ICWP_DS.'ip2nation.sql' );
+				$this->m_fIp2NationsDbInstall = $this->importMysqlFile( $this->oPluginVo->getRootDir().'inc'.ICWP_DS.'ip2nation'.ICWP_DS.'ip2nation.sql' );
 				$this->updateOption( $this->oPluginVo->getIp2NationsDbVersionKey(), $this->oPluginVo->getIp2NationsDbVersion() );
 			}
 			elseif ( isset( $_POST['cbc_dismiss'] ) ) {
@@ -257,9 +251,8 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		}
 
 		foreach ($aQueries as $to_run) {
-			$wpdb->query($to_run);
+			$mResult = $wpdb->query($to_run);
 		}
-
 		return true;
 	}
 
