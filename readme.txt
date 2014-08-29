@@ -4,7 +4,7 @@ Donate link: http://icwp.io/q
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.15.20140816-2
+Stable tag: 2.15.20140816-3
 
 == Description ==
 
@@ -140,6 +140,10 @@ ip2nationCountries
 = TODO =
 
 * Add option to remove the ip2nations data from the database.
+
+= 2.15.20140816-3 =
+
+* FIXED:    Manually updated the database data to correctly store ISO Codes for Countries. [ref](http://en.wikipedia.org/wiki/ISO_3166-1)
 
 = 2.15.20140816-2 =
 
