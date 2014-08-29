@@ -7,23 +7,25 @@ include_once( dirname(__FILE__).'/icwp-wpfunctions.php' );
 
 class ICWP_Plugins_Base_CBC {
 
-	static public $VERSION;
-
-	static public $PLUGIN_NAME;
-	static public $PLUGIN_PATH;
-	static public $PLUGIN_DIR;
-	static public $PLUGIN_URL;
-	static public $PLUGIN_BASENAME;
-	static public $OPTION_PREFIX;
-
 	const ParentTitle		= 'Worpit';
 	const ParentName		= 'Custom Content';
-	const ParentPermissions	= 'manage_options';
 	const ParentMenuId		= 'worpit';
 	const VariablePrefix	= 'worpit';
-	const BaseOptionPrefix	= 'worpit_';
 
-	const ViewExt			= '.php';
+	/**
+	 * @var string
+	 */
+	protected $sPluginBaseFile;
+	/**
+	 * @var string
+	 */
+	protected $sPluginUrl;
+
+	/**
+	 * @var ICWP_CustomContentByCountry_Plugin
+	 */
+	protected $oPluginVo;
+
 	const ViewDir			= 'views';
 
 	protected $m_aPluginMenu;
@@ -33,8 +35,10 @@ class ICWP_Plugins_Base_CBC {
 	protected $m_fUpdateSuccessTracker;
 	protected $m_aFailedUpdateOptions;
 
-	public function __construct() {
-		
+	public function __construct( ICWP_CustomContentByCountry_Plugin $oPluginVo ) {
+
+		$this->oPluginVo				= $oPluginVo;
+
 		add_action( 'plugins_loaded', array( $this, 'onWpPluginsLoaded' ) );
 		add_action( 'init', array( $this, 'onWpInit' ), 1 );
 		if ( is_admin() ) {
@@ -43,22 +47,64 @@ class ICWP_Plugins_Base_CBC {
 			add_action( 'admin_menu', array( $this, 'onWpAdminMenu' ) );
 			add_action( 'plugin_action_links', array( $this, 'onWpPluginActionLinks' ), 10, 4 );
 		}
+		add_filter( 'auto_update_plugin',		array( $this, 'onWpAutoUpdatePlugin' ), 1000, 2 );
 		/**
 		 * We make the assumption that all settings updates are successful until told otherwise
 		 * by an actual failing update_option call.
 		 */
 		$this->m_fUpdateSuccessTracker = true;
 		$this->m_aFailedUpdateOptions = array();
+	}
 
-		$this->m_sParentMenuIdSuffix = 'base';
+	/**
+	 * This is the path to the main plugin file relative to the WordPress plugins directory.
+	 *
+	 * @return string
+	 */
+	public function getPluginBaseFile() {
+		if ( !isset( $this->sPluginBaseFile ) ) {
+			$this->sPluginBaseFile	= plugin_basename( $this->oPluginVo->getRootFile() );
+		}
+		return $this->sPluginBaseFile;
+	}
+
+	/**
+	 * Returns this unique plugin prefix
+	 *
+	 * @param string $sGlue
+	 * @return string
+	 */
+	public function getPluginPrefix( $sGlue = '-' ) {
+		return $this->oPluginVo->getFullPluginPrefix( $sGlue );
+	}
+
+	/**
+	 * @param boolean $fUpdate
+	 * @param $oPluginInfo
+	 * @return bool
+	 */
+	public function onWpAutoUpdatePlugin( $fUpdate, $oPluginInfo ) {
+
+		// Only supports WordPress 3.8.2+
+		if ( !is_object( $oPluginInfo ) || !isset( $oPluginInfo->new_version ) || !isset( $oPluginInfo->plugin ) )  {
+			return $fUpdate;
+		}
+
+		if ( $oPluginInfo->plugin === $this->getPluginBaseFile() ) {
+			$aCurrentParts = explode( '-', $this->oPluginVo->getVersion(), 2 );
+			$aUpdateParts = explode( '-', $oPluginInfo->new_version, 2 );
+			// We only return true (i.e. update if and when the update is a minor version
+			return ( $aUpdateParts[0] === $aCurrentParts[0] );
+		}
+		return $fUpdate;
 	}
 
 	protected function getFullParentMenuId() {
-		return self::ParentMenuId .'-'. $this->m_sParentMenuIdSuffix;
-	}//getFullParentMenuId
+		return self::ParentMenuId .'-'. $this->oPluginVo->getPluginSlug();
+	}
 
 	protected function display( $insView, $inaData = array() ) {
-		$sFile = dirname(__FILE__).ICWP_DS.'..'.ICWP_DS.self::ViewDir.ICWP_DS.$insView.self::ViewExt;
+		$sFile = $this->oPluginVo->getViewDir().$insView.'.php';
 
 		if ( !is_file( $sFile ) ) {
 			echo "View not found: ".$sFile;
@@ -79,13 +125,13 @@ class ICWP_Plugins_Base_CBC {
 	}
 
 	protected function getImageUrl( $insImage ) {
-		return self::$PLUGIN_URL.'resources/images/'.$insImage;
+		return $this->sPluginUrl.'resources/images/'.$insImage;
 	}
 	protected function getCssUrl( $insCss ) {
-		return self::$PLUGIN_URL.'resources/css/'.$insCss;
+		return $this->sPluginUrl.'resources/css/'.$insCss;
 	}
 	protected function getJsUrl( $insJs ) {
-		return self::$PLUGIN_URL.'resources/js/'.$insJs;
+		return $this->sPluginUrl.'resources/js/'.$insJs;
 	}
 
 	protected function getSubmenuPageTitle( $insTitle ) {
@@ -106,7 +152,7 @@ class ICWP_Plugins_Base_CBC {
 			//Handle form submit
 			$this->handlePluginFormSubmit();
 		}
-	}//onWpPluginsLoaded
+	}
 
 	public function onWpInit() { }
 
@@ -120,20 +166,20 @@ class ICWP_Plugins_Base_CBC {
 			$this->enqueuePluginAdminCss();
 		}
 
-	}//onWpAdminInit
+	}
 
 	public function onWpAdminMenu() {
 
 		$sFullParentMenuId = $this->getFullParentMenuId();
 
-		add_menu_page( self::ParentTitle, self::ParentName, self::ParentPermissions, $sFullParentMenuId, array( $this, 'onDisplayMainMenu' ), $this->getImageUrl( 'worpit_16x16.png' ) );
+		add_menu_page( self::ParentTitle, self::ParentName, $this->oPluginVo->getBasePermissions(), $sFullParentMenuId, array( $this, 'onDisplayMainMenu' ), $this->getImageUrl( 'worpit_16x16.png' ) );
 
 		//Create and Add the submenu items
 		$this->createPluginSubMenuItems();
 		if ( !empty($this->m_aPluginMenu) ) {
 			foreach ( $this->m_aPluginMenu as $sMenuTitle => $aMenu ) {
 				list( $sMenuItemText, $sMenuItemId, $sMenuCallBack ) = $aMenu;
-				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, self::ParentPermissions, $sMenuItemId, array( $this, $sMenuCallBack ) );
+				add_submenu_page( $sFullParentMenuId, $sMenuTitle, $sMenuItemText, $this->oPluginVo->getBasePermissions(), $sMenuItemId, array( $this, $sMenuCallBack ) );
 			}
 		}
 
@@ -163,23 +209,23 @@ class ICWP_Plugins_Base_CBC {
 	 */
 	public function onDisplayMainMenu() {
 		$aData = array(
-				'plugin_url'	=> self::$PLUGIN_URL
+				'plugin_url'	=> $this->sPluginUrl
 		);
-		$this->display( 'worpit_'.$this->m_sParentMenuIdSuffix.'_index', $aData );
+		$this->display( 'worpit_'.$this->oPluginVo->getPluginSlug().'_index', $aData );
 	}
 
 	/**
 	 * The Action Links in the main plugins page. Defaults to link to the main Dashboard page
 	 * 
-	 * @param $inaLinks
-	 * @param $insFile
+	 * @param $aActionLinks
+	 * @param $sPluginFile
 	 */
-	public function onWpPluginActionLinks( $inaLinks, $insFile ) {
-		if ( $insFile == self::$PLUGIN_BASENAME ) {
-			$sSettingsLink = '<a href="'.admin_url( "admin.php" ).'?page='.$this->getFullParentMenuId().'">' . __( 'Settings', 'worpit' ) . '</a>';
-			array_unshift( $inaLinks, $sSettingsLink );
+	public function onWpPluginActionLinks( $aActionLinks, $sPluginFile ) {
+		if ( $sPluginFile == $this->getPluginBaseFile() ) {
+			$sSettingsLink = sprintf( '<a href="%s">%s</a>', admin_url( "admin.php" ).'?page='.$this->getFullParentMenuId(), 'Settings' ); ;
+			array_unshift( $aActionLinks, $sSettingsLink );
 		}
-		return $inaLinks;
+		return $aActionLinks;
 	}
 
 	/**
@@ -195,17 +241,17 @@ class ICWP_Plugins_Base_CBC {
 	protected function handlePluginFormSubmit() { }
 
 	protected function enqueueBootstrapAdminCss() {
-		wp_register_style( 'worpit_bootstrap_wpadmin_css', $this->getCssUrl('bootstrap-wpadmin.css'), false, self::$VERSION );
+		wp_register_style( 'worpit_bootstrap_wpadmin_css', $this->getCssUrl('bootstrap-wpadmin.css'), false, $this->oPluginVo->getVersion() );
 		wp_enqueue_style( 'worpit_bootstrap_wpadmin_css' );
-		wp_register_style( 'worpit_bootstrap_wpadmin_css_fixes',  $this->getCssUrl('bootstrap-wpadmin-fixes.css'), 'worpit_bootstrap_wpadmin_css', self::$VERSION );
+		wp_register_style( 'worpit_bootstrap_wpadmin_css_fixes',  $this->getCssUrl('bootstrap-wpadmin-fixes.css'), 'worpit_bootstrap_wpadmin_css', $this->oPluginVo->getVersion() );
 		wp_enqueue_style( 'worpit_bootstrap_wpadmin_css_fixes' );
-	}//enqueueBootstrapAdminCss
+	}
 
 	protected function enqueuePluginAdminCss() {
 		$iRand = rand();
-		wp_register_style( 'icwp_plugin_css'.$iRand, $this->getCssUrl('plugin.css'), false, self::$VERSION );
+		wp_register_style( 'icwp_plugin_css'.$iRand, $this->getCssUrl('plugin.css'), false, $this->oPluginVo->getVersion() );
 		wp_enqueue_style( 'icwp_plugin_css'.$iRand );
-	}//enqueueBootstrapAdminCss
+	}
 	
 	/**
 	 * Provides the basic HTML template for printing a WordPress Admin Notices
@@ -408,42 +454,42 @@ class ICWP_Plugins_Base_CBC {
 
 	protected function getAnswerFromPost( $insKey, $insPrefix = null ) {
 		if ( is_null( $insPrefix ) ) {
-			$insKey = self::$OPTION_PREFIX.$insKey;
+			$insKey = $this->oPluginVo->getOptionStoragePrefix().$insKey;
 		}
 		return ( isset( $_POST[$insKey] )? $_POST[$insKey]: 'N' );
 	}
 
 	/**
-	 * @param $insKey
-	 * @param bool $mDefault
+	 * @param $sOptionName
+	 * @param mixed $mDefault
 	 * @return mixed
 	 */
-	public function getOption( $insKey, $mDefault = false ) {
-		return ICWP_WpFunctions_CBC::GetWpOption( self::GetOptionKey($insKey), $mDefault );
+	public function getOption( $sOptionName, $mDefault = false ) {
+		return ICWP_WpFunctions_CBC::GetWpOption( $this->getOptionKey( $sOptionName ), $mDefault );
 	}
 
 	/**
-	 * @param $insKey
-	 * @param $insValue
+	 * @param $sOptionName
+	 * @param $sValue
 	 * @return mixed
 	 */
-	public function addOption( $insKey, $insValue ) {
-		return ICWP_WpFunctions_CBC::AddWpOption( self::GetOptionKey($insKey), $insValue );
+	public function addOption( $sOptionName, $sValue ) {
+		return ICWP_WpFunctions_CBC::AddWpOption( $this->getOptionKey( $sOptionName ), $sValue );
 	}
 
 	/**
-	 * @param $insKey
+	 * @param $sOptionName
 	 * @param $insValue
 	 * @return bool
 	 */
-	public function updateOption( $insKey, $insValue ) {
-		if ( $this->getOption( $insKey ) == $insValue ) {
+	public function updateOption( $sOptionName, $insValue ) {
+		if ( $this->getOption( $sOptionName ) == $insValue ) {
 			return true;
 		}
-		$fResult = ICWP_WpFunctions_CBC::UpdateWpOption( self::GetOptionKey($insKey), $insValue );
+		$fResult = ICWP_WpFunctions_CBC::UpdateWpOption( $this->getOptionKey( $sOptionName ), $insValue );
 		if ( !$fResult ) {
 			$this->m_fUpdateSuccessTracker = false;
-			$this->m_aFailedUpdateOptions[] = self::GetOptionKey($insKey);
+			$this->m_aFailedUpdateOptions[] = $this->getOptionKey( $sOptionName );
 		}
 	}
 
@@ -452,15 +498,15 @@ class ICWP_Plugins_Base_CBC {
 	 * @return mixed
 	 */
 	public function deleteOption( $insKey ) {
-		return ICWP_WpFunctions_CBC::DeleteWpOption( self::GetOptionKey($insKey) );
+		return ICWP_WpFunctions_CBC::DeleteWpOption( $this->getOptionKey( $insKey ) );
 	}
 
 	/**
-	 * @param string $insKey
+	 * @param string $sOptionName
 	 * @return string
 	 */
-	static public function GetOptionKey( $insKey ) {
-		return self::$OPTION_PREFIX.$insKey;
+	public function getOptionKey( $sOptionName ) {
+		return $this->oPluginVo->getOptionStoragePrefix().$sOptionName;
 	}
 
 	public function onWpActivatePlugin() { }

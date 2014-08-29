@@ -4,7 +4,7 @@ Donate link: http://icwp.io/q
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 3.9
-Stable tag: 2.14
+Stable tag: 2.15.20140816-1
 
 == Description ==
 
@@ -140,6 +140,13 @@ ip2nationCountries
 = TODO =
 
 * Add option to remove the ip2nations data from the database.
+
+= 2.15.20140816-1 =
+
+* FIXED:    Manual tweak to the ip2nations database to correctly reflect the ISO country code for Sweden [ref](http://wordpress.org/support/topic/what-are-the-country-codes)
+* CHANGED:  Plugin version now highlights the date of the ip2nations database (YYYYMMDD)
+* ADDED:    Automatic plugin updates for updated ip2nations db, minor releases, bug fixes [as per my own article](http://www.icontrolwp.com/2014/08/security-wordpress-plugins-must-one-thing/)
+* CHANGED:  Plugin refactor to bring it closer in-line with developments made on [Simple Firewall](http://wordpress.org/plugins/wp-simple-firewall/) and [Twitter Bootstrap](http://wordpress.org/plugins/wordpress-bootstrap-css/) plugins
 
 = 2.14 =
 
