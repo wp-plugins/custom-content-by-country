@@ -144,6 +144,7 @@ ip2nationCountries
 = 2.16.140816-1 =
 
 * CHANGED:  WordPress 4.0 compatibility.
+* CHANGED:  Changed plugin version to be shorter (YYMMDD)
 
 = 2.15.20140816-4 =
 
