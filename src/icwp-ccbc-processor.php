@@ -526,5 +526,21 @@ class ICWP_CCBC_Processor_GeoLocation_V1 {
 }
 
 if ( !class_exists('ICWP_CCBC_Processor_GeoLocation') ):
-	class ICWP_CCBC_Processor_GeoLocation extends ICWP_CCBC_Processor_GeoLocation_V1 { }
+	class ICWP_CCBC_Processor_GeoLocation extends ICWP_CCBC_Processor_GeoLocation_V1 {
+
+		/**
+		 * @var ICWP_CCBC_Processor_GeoLocation
+		 */
+		protected static $oInstance = NULL;
+
+		/**
+		 * @return ICWP_CCBC_Processor_GeoLocation
+		 */
+		public static function GetInstance() {
+			if ( is_null( self::$oInstance ) ) {
+				self::$oInstance = new self();
+			}
+			return self::$oInstance;
+		}
+	}
 endif;
