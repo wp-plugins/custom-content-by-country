@@ -3,12 +3,12 @@ Contributors: paultgoodchild, dlgoodchild
 Donate link: http://icwp.io/q
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
-Tested up to: 4.0
-Stable tag: 2.16.140816-1
+Tested up to: 4.2
+Stable tag: 2.17.150218
 
 == Description ==
 
-Custom Content by Country WordPress plugin from [iControlWP](http://www.icontrolwp.com/ "iControlWP: Manage Muliple WordPress Sites Better")
+Custom Content by Country WordPress plugin from [iControlWP](http://icwp.io/5z "iControlWP: Manage Multiple WordPress Sites Better")
 offers you the option to show/hide content to users based on their location (where provided).
 
 With a simple shortcode you can specify, using a list of country codes whether to 
@@ -117,9 +117,9 @@ the W3 Total Cache plugin for more info.
 
 = Do you make any other plugins? =
 
-We also created the [Manage Multiple WordPress Site Better Tool: iControlWP](http://www.icontrolwp.com/?src=wporg) for people with multiple WordPress sites to manage.
+We also created the [Manage Multiple WordPress Site Better Tool: iControlWP](http://icwp.io/60) for people with multiple WordPress sites to manage.
 
-Yes, we created the only [Twitter Bootstrap WordPress](http://www.icontrolwp.com/our-wordpress-plugins/wordpress-twitter-bootstrap-css-plugin-home/ "Twitter Bootstrap WordPress Plugin")
+Yes, we created the only [Twitter Bootstrap WordPress](http://icwp.io/61 "Twitter Bootstrap WordPress Plugin")
 plugin with over 122,000 downloads so far.
 
 = What "country code" can I use to test locally if I'm accessing a server on our network? =
@@ -141,6 +141,11 @@ ip2nationCountries
 
 * Add option to remove the ip2nations data from the database.
 
+= 2.17.150218 =
+*released 16th, April 2015*
+
+* UPDATED:  Updated Geo location database to latest available version: 2015-02-18.
+
 = 2.16.140816-1 =
 
 * CHANGED:  WordPress 4.0 compatibility.
@@ -154,7 +159,7 @@ ip2nationCountries
 
 * FIXED:    Manual tweak to the ip2nations database to correctly reflect the ISO country code for Sweden [ref](http://wordpress.org/support/topic/what-are-the-country-codes)
 * CHANGED:  Plugin version now highlights the date of the ip2nations database (YYYYMMDD)
-* ADDED:    Automatic plugin updates for updated ip2nations db, minor releases, bug fixes [as per my own article](http://www.icontrolwp.com/2014/08/security-wordpress-plugins-must-one-thing/)
+* ADDED:    Automatic plugin updates for updated ip2nations db, minor releases, bug fixes [as per my own article](http://icwp.io/62)
 * CHANGED:  Plugin refactor to bring it closer in-line with developments made on [Simple Firewall](http://wordpress.org/plugins/wp-simple-firewall/) and [Twitter Bootstrap](http://wordpress.org/plugins/wordpress-bootstrap-css/) plugins
 
 = 2.14 =

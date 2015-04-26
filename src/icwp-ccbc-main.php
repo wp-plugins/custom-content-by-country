@@ -206,7 +206,9 @@ class ICWP_CustomContentByCountry extends ICWP_Plugins_Base_CBC {
 		if ( isset( $_GET['CBC_INSTALL_DB'] ) && $_GET['CBC_INSTALL_DB'] == 'install' ) {
 			if ( isset( $_POST['cbc_install'] ) && $_POST['cbc_install'] == "1" ) {
 				$this->m_fIp2NationsDbInstallAttempt = true;	//used later for admin notices
-				$this->m_fIp2NationsDbInstall = $this->importMysqlFile( $this->oPluginVo->getRootDir().'inc'.ICWP_DS.'ip2nation'.ICWP_DS.'ip2nation.sql' );
+				$sSqlDir = $this->oPluginVo->getRootDir() . 'inc' . ICWP_DS . 'ip2nation' . ICWP_DS;
+				$this->m_fIp2NationsDbInstall = $this->importMysqlFile( $sSqlDir.'ip2nation.sql' );
+				$this->m_fIp2NationsDbInstall = $this->m_fIp2NationsDbInstall && $this->importMysqlFile( $sSqlDir.'ip2nationCountries.sql' );
 				$this->updateOption( $this->oPluginVo->getIp2NationsDbVersionKey(), $this->oPluginVo->getIp2NationsDbVersion() );
 			}
 			elseif ( isset( $_POST['cbc_dismiss'] ) ) {

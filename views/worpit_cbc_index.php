@@ -52,12 +52,6 @@
 		  </div>
 		</div><!-- / row -->
 
-		<div class="row" id="developer_channel_promo">
-		  <div class="span12">
-		  	<?php echo getWidgetIframeHtml('dashboard-widget-developerchannel'); ?>
-		  </div>
-		</div><!-- / row -->
-		
 		<div class="row" id="tbs_docs">
 		  <div class="span6" id="tbs_docs_shortcodes">
 			  <div class="well">
