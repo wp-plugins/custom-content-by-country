@@ -4,7 +4,7 @@ Donate link: http://icwp.io/q
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 4.2
-Stable tag: 2.17.150218
+Stable tag: 2.17.150218-1
 
 == Description ==
 
@@ -141,10 +141,11 @@ ip2nationCountries
 
 * Add option to remove the ip2nations data from the database.
 
-= 2.17.150218 =
+= 2.17.150218-1 =
 *released 16th, April 2015*
 
 * UPDATED:  Updated Geo location database to latest available version: 2015-02-18.
+* FIX:      ISO Country Codes for Mexico (MX), and Maldives (MV)
 
 = 2.16.140816-1 =
 
