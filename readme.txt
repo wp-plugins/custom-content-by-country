@@ -4,20 +4,20 @@ Donate link: http://icwp.io/q
 Tags: ip2nation, custom content, location, geolocation
 Requires at least: 3.2.0
 Tested up to: 4.3
-Stable tag: 2.17.150725
+Stable tag: 2.17.150725-0
 
 == Description ==
 
 Custom Content by Country WordPress plugin from [iControlWP](http://icwp.io/5z "iControlWP: Manage Multiple WordPress Sites Better")
 offers you the option to show/hide content to users based on their location (where provided).
 
-With a simple shortcode you can specify, using a list of country codes whether to 
+With a simple shortcode you can specify, using a list of country codes whether to
 display or hide a block of text/content.
 
 As of version 2.0 I have included functionality so you can dynamically generate Amazon Associate/Affiliate links based on the
 visitor's country. You simply specify your amazon associate tags and the plugin will do the rest.
 
-To learn how to use the plugin, see the [comprehensive FAQ](http://wordpress.org/extend/plugins/custom-content-by-country/faq/)  
+To learn how to use the plugin, see the [comprehensive FAQ](http://wordpress.org/extend/plugins/custom-content-by-country/faq/)
 
 == Frequently Asked Questions ==
 
@@ -141,6 +141,11 @@ ip2nationCountries
 
 * Add option to remove the ip2nations data from the database.
 
+= 2.17.150725-0 =
+*released 10th, August 2015*
+
+* FIXED:  PHP Warning notice in settings page.
+
 = 2.17.150725 =
 *released 26th, July 2015*
 
@@ -244,7 +249,7 @@ ip2nationCountries
 * UPDATED: the IP 2 Nation database to the version released 3rd June 2012. You will be prompted to run the database upgrade after the plugin is installed.
 * ADDED: Plugin options/settings page - you must enable any of the 2 main features to use anything from the plugin. This is in order to maximum plugin
 performance so only the absolutely necessary code is used.
-* ADDED: Automatic Amazon Affiliate links using shortcode: [CBC_AMAZON] . You can also specify Amazon associate tags for each Amazon website 
+* ADDED: Automatic Amazon Affiliate links using shortcode: [CBC_AMAZON] . You can also specify Amazon associate tags for each Amazon website
 and the plugin will automatically use it with the appropriate site and generate an affiliate link for your product ASIN depending on where the visitor is from.
 * ADDED: Plugin now conforms to iControlWP standard plugin structure. Faster, stable and automatically generates options pages.
 

@@ -12,8 +12,7 @@ function printAllPluginOptionsForm( $inaAllPluginOptions, $insVarPrefix = '', $i
 
 	$iRowWidth = 8; //8 spans.
 	$iOptionWidth = $iRowWidth / $iOptionsPerRow;
-	$sOptionValue;
-	
+
 	//Take each Options Section in turn
 	foreach ( $inaAllPluginOptions as $sOptionSection ) {
 		
@@ -95,7 +94,8 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 		$sAdditionalClass = '';
 		$sTextInput = '';
 		$sChecked = '';
-		
+		$sHelpSection = '';
+
 		if ( $mOptionType === 'checkbox' ) {
 			
 			$sChecked = ( $sOptionSaved == 'Y' )? 'checked="checked"' : '';
@@ -145,7 +145,7 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 			
 			$sOptionHelpText = '<p class="help-block">'.$sOptionHelpText.'</p>';
 
-		} else if ( strpos( $mOptionType, 'less_' ) === 0 ) {	//dealing with the LESS compiler options
+		} else if ( strpos( $mOptionType, 'less_' ) === 0 ) {	//dealing with the LESS compiler options class_exists(HLT_BootstrapLess) is implied
 
 			if ( empty($sOptionSaved) ) {
 				$sOptionSaved = $sOptionDefault;
@@ -171,7 +171,7 @@ function getPluginOptionSpan( $inaOption, $iSpanSize, $insVarPrefix = '' ) {
 							  <label>
 								<input type="checkbox"
 									name="hlt_toggle_'.$sOptionKey.'"
-									id="hlt_toggle_'.$sOptionKey.'"'.$sChecked.'
+									id="hlt_toggle_'.$sOptionKey.'" '.$sChecked.'
 									style="vertical-align: -2px;" /> edit as text
 							  </label>
 							</span>';
